@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+
+<html lang="id">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Dashboard Sahabatku.id</title>
+
+<style>
+
+body{
+
+  margin:0;
+
+  font-family:Arial,sans-serif;
+
+  background:#f2f6ff;
+
+  color:#24334d;
+
+}
+
+header{
+
+  background:#2563eb;
+
+  color:white;
+
+  padding:22px 7%;
+
+}
+
+header h2{margin:0}
+
+main{padding:35px 7%}
+
+.welcome{
+
+  background:white;
+
+  padding:25px;
+
+  border-radius:15px;
+
+  margin-bottom:25px;
+
+}
+
+.welcome h1{color:#1746a2}
+
+.cards{
+
+  display:grid;
+
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+
+  gap:20px;
+
+}
+
+.card{
+
+  background:white;
+
+  padding:25px;
+
+  border-radius:15px;
+
+  box-shadow:0 4px 15px #0001;
+
+}
+
+.card .emoji{font-size:40px}
+
+.card h3{color:#1746a2}
+
+.card p{line-height:1.6;color:#64748b}
+
+button{
+
+  background:#2563eb;
+
+  color:white;
+
+  padding:11px 18px;
+
+  border:0;
+
+  border-radius:8px;
+
+  cursor:pointer;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+  <h2>💙 Sahabatku.id</h2>
+
+  <p>Dashboard Pembelajaran Siswa</p>
+
+</header>
+
+<main>
+
+  <div class="welcome">
+
+    <h1>Halo, Sahabat! 👋</h1>
+
+    <p>Selamat datang di ruang belajar pertemanan sehat.</p>
+
+    <p id="userEmail">Memuat akun...</p>
+
+  </div>
+
+  <div class="cards">
+
+    <div class="card">
+
+      <div class="emoji">📚</div>
+
+      <h3>Materi Pembelajaran</h3>
+
+      <p>Pelajari cara membangun pertemanan sehat dan saling menghargai.</p>
+
+      <button onclick="location.href='materi.html'">Buka Materi</button>
+
+    </div>
+
+    <div class="card">
+
+      <div class="emoji">📝</div>
+
+      <h3>Kuis Interaktif</h3>
+
+      <p>Uji pemahamanmu tentang pertemanan sehat.</p>
+
+      <button onclick="location.href='kuis.html'">Mulai Kuis</button>
+
+    </div>
+
+    <div class="card">
+
+      <div class="emoji">📋</div>
+
+      <h3>Angket Siswa</h3>
+
+      <p>Kenali pengalaman dan pemahaman tentang hubungan sosial.</p>
+
+      <button onclick="location.href='angket.html'">Isi Angket</button>
+
+    </div>
+
+    <div class="card">
+
+      <div class="emoji">💬</div>
+
+      <h3>Bantuan dan BK</h3>
+
+      <p>Kenali cara meminta bantuan ketika mengalami masalah pertemanan.</p>
+
+      <button onclick="location.href='bantuan.html'">Lihat Bantuan</button>
+
+    </div>
+
+  </div>
+
+  <p style="margin-top:35px">
+
+    <button onclick="logout()">Keluar dari Akun</button>
+
+  </p>
+
+</main>
+
+<script type="module">
+
+import { supabase } from './supabase.js';
+
+const {data,error}=await supabase.auth.getUser();
+
+if(error || !data.user){
+
+  location.href='auth.html';
+
+}else{
+
+  document.getElementById('userEmail').textContent =
+
+    'Akun: '+data.user.email;
+
+}
+
+window.logout=async function(){
+
+  await supabase.auth.signOut();
+
+  location.href='auth.html';
+
+};
+
+</script>
+
+</body>
+
+</html>
