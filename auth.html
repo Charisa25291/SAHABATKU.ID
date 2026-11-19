@@ -22,7 +22,7 @@ body{
 
   margin:0;
 
-  padding:30px 15px;
+  padding:25px 15px;
 
   color:#24334d;
 
@@ -32,11 +32,11 @@ body{
 
   max-width:430px;
 
-  margin:30px auto;
+  margin:25px auto;
 
   background:white;
 
-  padding:30px;
+  padding:27px;
 
   border-radius:18px;
 
@@ -44,51 +44,99 @@ body{
 
 }
 
-.logo{text-align:center;color:#2563eb;font-size:26px;font-weight:bold}
+.logo{
+
+  text-align:center;
+
+  color:#2563eb;
+
+  font-size:25px;
+
+  font-weight:bold;
+
+}
 
 h2{text-align:center;color:#1746a2}
 
 p{text-align:center;color:#64748b;line-height:1.6}
 
-.tabs{display:flex;gap:10px;margin:25px 0}
-
-.tabs button{
-
-  flex:1;padding:12px;border:0;border-radius:8px;
-
-  background:#e5edff;color:#1746a2;font-weight:bold;
-
-}
-
-.tabs button.active{background:#2563eb;color:white}
-
 label{display:block;margin:15px 0 7px;font-weight:bold}
 
 input,select{
 
-  width:100%;padding:13px;border:1px solid #d5ddeb;
+  width:100%;
 
-  border-radius:8px;font-size:15px;
+  padding:13px;
+
+  border:1px solid #d5ddeb;
+
+  border-radius:8px;
+
+  font-size:15px;
 
 }
 
-.submit{
+button{
 
-  width:100%;padding:14px;margin-top:22px;
+  width:100%;
 
-  background:#2563eb;color:white;border:0;
+  padding:14px;
 
-  border-radius:9px;font-size:16px;font-weight:bold;
+  margin-top:20px;
+
+  background:#2563eb;
+
+  color:white;
+
+  border:0;
+
+  border-radius:9px;
+
+  font-size:16px;
+
+  font-weight:bold;
 
   cursor:pointer;
 
 }
 
-.message{text-align:center;margin-top:15px;font-size:14px}
+button:disabled{opacity:.6}
+
+.tabs{display:flex;gap:10px;margin:22px 0}
+
+.tabs button{
+
+  flex:1;
+
+  margin:0;
+
+  padding:12px;
+
+  background:#e5edff;
+
+  color:#1746a2;
+
+}
+
+.tabs button.active{background:#2563eb;color:white}
+
+.message{
+
+  text-align:center;
+
+  margin-top:15px;
+
+  font-size:14px;
+
+  line-height:1.5;
+
+}
 
 .back{text-align:center;margin-top:20px}
 
 a{color:#2563eb;text-decoration:none}
+
+[hidden]{display:none!important}
 
 </style>
 
@@ -102,13 +150,25 @@ a{color:#2563eb;text-decoration:none}
 
   <h2 id="heading">Selamat Datang!</h2>
 
-  <p>Bangun pertemanan sehat bersama Sahabatku.id.</p>
+  <p id="description">
+
+    Silakan masuk ke akun Sahabatku.id.
+
+  </p>
 
   <div class="tabs">
 
-    <button id="loginTab" class="active" onclick="showForm('login')">Login</button>
+    <button type="button" id="loginTab" class="active">
 
-    <button id="registerTab" onclick="showForm('register')">Daftar</button>
+      Login
+
+    </button>
+
+    <button type="button" id="registerTab">
+
+      Daftar
+
+    </button>
 
   </div>
 
@@ -118,21 +178,15 @@ a{color:#2563eb;text-decoration:none}
 
       <label>Nama Lengkap</label>
 
-      <input id="name" type="text" placeholder="Masukkan nama lengkap">
+      <input id="name" type="text"
+
+      placeholder="Masukkan nama lengkap">
 
     </div>
 
-    <label>Email</label>
-
-    <input id="email" type="email" placeholder="Masukkan email" required>
-
-    <label>Password</label>
-
-    <input id="password" type="password" placeholder="Minimal 6 karakter" minlength="6" required>
-
     <div id="roleField" hidden>
 
-      <label>Daftar sebagai</label>
+      <label>Jenis Akun</label>
 
       <select id="role">
 
@@ -144,61 +198,167 @@ a{color:#2563eb;text-decoration:none}
 
     </div>
 
-    <button class="submit" id="submitButton" type="submit">Masuk</button>
+    <div id="codeField" hidden>
+
+      <label>Kode Akses dari Admin</label>
+
+      <input id="accessCode" type="text"
+
+      placeholder="Masukkan kode akses">
+
+    </div>
+
+    <label>Email</label>
+
+    <input id="email" type="email"
+
+    placeholder="Masukkan email" required>
+
+    <label>Password</label>
+
+    <input id="password" type="password"
+
+    placeholder="Minimal 6 karakter"
+
+    minlength="6" required>
+
+    <button id="submitButton" type="submit">
+
+      Masuk
+
+    </button>
 
   </form>
 
   <div class="message" id="message"></div>
 
-  <div class="back"><a href="index.html">← Kembali ke Beranda</a></div>
+  <div class="back">
+
+    <a href="index.html">← Kembali ke Beranda</a>
+
+  </div>
 
 </div>
-
-<script>
-
-let mode = 'login';
-
-window.showForm = function(type) {
-
-  mode = type;
-
-  document.getElementById('nameField').hidden = type !== 'register';
-
-  document.getElementById('roleField').hidden = type !== 'register';
-
-  document.getElementById('heading').textContent =
-
-    type === 'login' ? 'Selamat Datang!' : 'Buat Akun Baru';
-
-  document.getElementById('submitButton').textContent =
-
-    type === 'login' ? 'Masuk' : 'Daftar Sekarang';
-
-  document.getElementById('loginTab').classList.toggle('active', type === 'login');
-
-  document.getElementById('registerTab').classList.toggle('active', type === 'register');
-
-  document.getElementById('message').textContent = '';
-
-}
-
-</script>
 
 <script type="module">
 
 import { supabase } from './supabase.js';
 
-document.getElementById('authForm').addEventListener('submit', async function(e) {
+const params = new URLSearchParams(location.search);
+
+const selectedRole = params.get('role') || 'siswa';
+
+let mode = 'login';
+
+const heading = document.getElementById('heading');
+
+const description = document.getElementById('description');
+
+const message = document.getElementById('message');
+
+const roleSelect = document.getElementById('role');
+
+const submit = document.getElementById('submitButton');
+
+if (!['siswa','admin','guru_bk'].includes(selectedRole)) {
+
+  location.href = 'index.html';
+
+}
+
+if (selectedRole === 'admin') {
+
+  heading.textContent = 'Login Admin';
+
+  description.textContent = 'Masuk menggunakan akun Admin.';
+
+} else if (selectedRole === 'guru_bk') {
+
+  heading.textContent = 'Login Guru BK';
+
+  description.textContent = 'Masuk menggunakan akun Guru BK.';
+
+  roleSelect.value = 'guru_bk';
+
+} else {
+
+  heading.textContent = 'Login Siswa';
+
+  description.textContent = 'Masuk menggunakan akun Siswa.';
+
+  roleSelect.value = 'siswa';
+
+}
+
+function showForm(type) {
+
+  mode = type;
+
+  document.getElementById('nameField').hidden =
+
+    type !== 'register';
+
+  document.getElementById('roleField').hidden =
+
+    type !== 'register';
+
+  document.getElementById('codeField').hidden =
+
+    type !== 'register';
+
+  heading.textContent = type === 'login'
+
+    ? 'Login ' + selectedRole.replace('_',' ').toUpperCase()
+
+    : 'Daftar Akun Baru';
+
+  submit.textContent = type === 'login'
+
+    ? 'Masuk'
+
+    : 'Daftar Sekarang';
+
+  message.textContent = '';
+
+  document.getElementById('name').required =
+
+    type === 'register';
+
+  document.getElementById('accessCode').required =
+
+    type === 'register';
+
+}
+
+document.getElementById('loginTab').onclick =
+
+  () => showForm('login');
+
+document.getElementById('registerTab').onclick =
+
+  () => showForm('register');
+
+roleSelect.onchange = () => {
+
+  if (selectedRole === 'guru_bk') {
+
+    roleSelect.value = 'guru_bk';
+
+  }
+
+  if (selectedRole === 'siswa') {
+
+    roleSelect.value = 'siswa';
+
+  }
+
+};
+
+document.getElementById('authForm')
+
+.addEventListener('submit', async (e) => {
 
   e.preventDefault();
-
-  const email = document.getElementById('email').value.trim();
-
-  const password = document.getElementById('password').value;
-
-  const message = document.getElementById('message');
-
-  const submit = document.getElementById('submitButton');
 
   submit.disabled = true;
 
@@ -206,27 +366,67 @@ document.getElementById('authForm').addEventListener('submit', async function(e)
 
   try {
 
+    const email = document.getElementById('email')
+
+      .value.trim();
+
+    const password = document.getElementById('password')
+
+      .value;
+
     if (mode === 'register') {
 
-      const name = document.getElementById('name').value.trim();
+      const nama = document.getElementById('name')
 
-      const role = document.getElementById('role').value;
+        .value.trim();
 
-      if (!name) throw new Error('Nama lengkap wajib diisi.');
+      const role = roleSelect.value;
 
-      const { data, error } = await supabase.auth.signUp({
+      const kode = document.getElementById('accessCode')
+
+        .value.trim();
+
+      if (selectedRole === 'admin') {
+
+        throw new Error(
+
+          'Pendaftaran Admin tidak tersedia.'
+
+        );
+
+      }
+
+      if (role !== selectedRole) {
+
+        throw new Error(
+
+          'Jenis akun tidak sesuai pilihan.'
+
+        );
+
+      }
+
+      if (!nama || !kode) {
+
+        throw new Error(
+
+          'Nama dan kode akses wajib diisi.'
+
+        );
+
+      }
+
+      const {data,error} = await supabase.auth.signUp({
 
         email,
 
         password,
 
-        options: {
+        options:{
 
-          data: {
+          data:{
 
-            full_name: name,
-
-            role: role
+            full_name:nama
 
           }
 
@@ -236,37 +436,151 @@ document.getElementById('authForm').addEventListener('submit', async function(e)
 
       if (error) throw error;
 
-      message.textContent = data.session
+      if (!data.session) {
 
-        ? 'Pendaftaran berhasil! Silakan login.'
+        message.textContent =
 
-        : 'Pendaftaran berhasil. Silakan periksa email untuk verifikasi.';
+          'Akun berhasil dibuat. Silakan verifikasi email, kemudian login untuk mengirim pendaftaran.';
+
+        return;
+
+      }
+
+      const {data:hasil,error:rpcError} =
+
+        await supabase.rpc('kirim_pendaftaran',{
+
+          p_nama:nama,
+
+          p_jenis_akun:role,
+
+          p_kode:kode
+
+        });
+
+      if (rpcError) throw rpcError;
+
+      message.textContent = hasil;
 
     } else {
 
-      const { error } = await supabase.auth.signInWithPassword({
+      const {data,error} =
 
-        email,
+        await supabase.auth.signInWithPassword({
 
-        password
+          email,
 
-      });
+          password
+
+        });
 
       if (error) throw error;
 
-      message.textContent = 'Login berhasil!';
+      const user = data.user;
 
-      setTimeout(() => {
+      if (
 
-        window.location.href = 'dashboard.html';
+        selectedRole === 'admin' ||
 
-      }, 1000);
+        selectedRole === 'guru_bk'
+
+      ) {
+
+        const {data:roles,error:roleError} =
+
+          await supabase
+
+            .from('user_roles')
+
+            .select('role')
+
+            .eq('user_id',user.id);
+
+        if (roleError) throw roleError;
+
+        const punyaAkses =
+
+          roles.some(r => r.role === selectedRole);
+
+        if (!punyaAkses) {
+
+          await supabase.auth.signOut();
+
+          throw new Error(
+
+            'Akun belum memiliki akses ' + selectedRole + '.'
+
+          );
+
+        }
+
+        message.textContent = 'Login berhasil!';
+
+        setTimeout(() => {
+
+          location.href = selectedRole === 'admin'
+
+            ? 'admin.html'
+
+            : 'guru-bk.html';
+
+        },800);
+
+      } else {
+
+        const {data:pendaftaran,error:daftarError} =
+
+          await supabase
+
+            .from('pendaftaran')
+
+            .select('status')
+
+            .eq('user_id',user.id)
+
+            .eq('jenis_akun','siswa')
+
+            .order('created_at',{ascending:false})
+
+            .limit(1);
+
+        if (daftarError) throw daftarError;
+
+        if (
+
+          !pendaftaran.length ||
+
+          pendaftaran[0].status !== 'Disetujui'
+
+        ) {
+
+          await supabase.auth.signOut();
+
+          throw new Error(
+
+            'Akun siswa belum disetujui Admin.'
+
+          );
+
+        }
+
+        message.textContent = 'Login berhasil!';
+
+        setTimeout(() => {
+
+          location.href = 'dashboard.html';
+
+        },800);
+
+      }
 
     }
 
-  } catch (error) {
+  } catch(error) {
 
-    message.textContent = 'Terjadi kesalahan: ' + error.message;
+    message.textContent =
+
+      'Terjadi kesalahan: ' + error.message;
 
   } finally {
 
