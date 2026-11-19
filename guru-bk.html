@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+
+<html lang="id">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Dashboard Guru BK - Sahabatku.id</title>
+
+<style>
+
+* {
+
+  box-sizing: border-box;
+
+}
+
+body {
+
+  font-family: Arial, sans-serif;
+
+  background: #edf4ff;
+
+  margin: 0;
+
+  padding: 20px;
+
+  color: #24324a;
+
+}
+
+.container {
+
+  max-width: 1000px;
+
+  margin: auto;
+
+}
+
+header {
+
+  background: #315caa;
+
+  color: white;
+
+  padding: 25px;
+
+  border-radius: 15px;
+
+  margin-bottom: 20px;
+
+}
+
+header h1 {
+
+  margin-top: 0;
+
+}
+
+.card {
+
+  background: white;
+
+  padding: 22px;
+
+  border-radius: 14px;
+
+  margin-bottom: 20px;
+
+  box-shadow: 0 3px 12px #00000010;
+
+}
+
+button {
+
+  background: #315caa;
+
+  color: white;
+
+  border: none;
+
+  padding: 11px 17px;
+
+  border-radius: 8px;
+
+  cursor: pointer;
+
+  margin: 5px;
+
+}
+
+button:hover {
+
+  background: #234680;
+
+}
+
+#pesan {
+
+  color: #315caa;
+
+  font-weight: bold;
+
+}
+
+.table-wrap {
+
+  overflow-x: auto;
+
+}
+
+table {
+
+  width: 100%;
+
+  border-collapse: collapse;
+
+  min-width: 650px;
+
+}
+
+th, td {
+
+  padding: 12px;
+
+  border-bottom: 1px solid #ddd;
+
+  text-align: left;
+
+  vertical-align: top;
+
+}
+
+th {
+
+  background: #e8f0ff;
+
+}
+
+.kosong {
+
+  color: #666;
+
+  padding: 15px 0;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+
+  <h1>Dashboard Guru BK</h1>
+
+  <p>Sahabatku.id - Layanan Bimbingan dan Konseling</p>
+
+</header>
+
+<div class="card">
+
+  <h2>Selamat Datang, Guru BK!</h2>
+
+  <p>Halaman ini digunakan untuk melihat permintaan bantuan yang dikirim oleh siswa.</p>
+
+  <button id="muat">Muat Data Permintaan</button>
+
+  <button id="keluar">Keluar</button>
+
+  <p id="pesan">Memeriksa akun...</p>
+
+</div>
+
+<div class="card">
+
+  <h2>Daftar Permintaan Bantuan Siswa</h2>
+
+  <div class="table-wrap">
+
+    <table>
+
+      <thead>
+
+        <tr>
+
+          <th>Nama</th>
+
+          <th>Jenis Masalah</th>
+
+          <th>Cerita Siswa</th>
+
+          <th>Waktu Pengiriman</th>
+
+        </tr>
+
+      </thead>
+
+      <tbody id="daftar">
+
+        <tr>
+
+          <td colspan="4">Memuat data...</td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { supabase } from './supabase.js';
+
+const pesan = document.getElementById('pesan');
+
+const daftar = document.getElementById('daftar');
+
+const tombolMuat = document.getElementById('muat');
+
+async function periksaAkun() {
+
+  const { data: { user }, error } = await supabase.auth.getUser();
+
+  if (error || !user) {
+
+    pesan.textContent = 'Silakan login terlebih dahulu.';
+
+    return false;
+
+  }
+
+  const { data: role, error: roleError } = await supabase
+
+    .from('user_roles')
+
+    .select('role')
+
+    .eq('user_id', user.id)
+
+    .maybeSingle();
+
+  if (roleError) {
+
+    pesan.textContent = 'Gagal memeriksa peran akun: ' + roleError.message;
+
+    return false;
+
+  }
+
+  if (!role || role.role !== 'guru_bk') {
+
+    pesan.textContent = 'Akses ditolak. Halaman ini khusus Guru BK.';
+
+    return false;
+
+  }
+
+  pesan.textContent = 'Login berhasil sebagai Guru BK.';
+
+  return true;
+
+}
+
+async function muatData() {
+
+  const bolehMasuk = await periksaAkun();
+
+  if (!bolehMasuk) {
+
+    daftar.innerHTML = '<tr><td colspan="4">Akses tidak tersedia.</td></tr>';
+
+    return;
+
+  }
+
+  pesan.textContent = 'Mengambil data permintaan bantuan...';
+
+  const { data, error } = await supabase
+
+    .from('permintaan_bantuan')
+
+    .select('nama, masalah, cerita, created_at')
+
+    .order('created_at', { ascending: false });
+
+  if (error) {
+
+    pesan.textContent = 'Gagal mengambil data: ' + error.message;
+
+    return;
+
+  }
+
+  daftar.innerHTML = '';
+
+  if (!data || data.length === 0) {
+
+    daftar.innerHTML =
+
+      '<tr><td colspan="4">Belum ada permintaan bantuan.</td></tr>';
+
+    pesan.textContent = 'Data berhasil diperiksa.';
+
+    return;
+
+  }
+
+  data.forEach(item => {
+
+    const baris = document.createElement('tr');
+
+    const nama = document.createElement('td');
+
+    nama.textContent = item.nama;
+
+    const masalah = document.createElement('td');
+
+    masalah.textContent = item.masalah;
+
+    const cerita = document.createElement('td');
+
+    cerita.textContent = item.cerita;
+
+    const waktu = document.createElement('td');
+
+    waktu.textContent = item.created_at
+
+      ? new Date(item.created_at).toLocaleString('id-ID')
+
+      : '-';
+
+    baris.append(nama, masalah, cerita, waktu);
+
+    daftar.appendChild(baris);
+
+  });
+
+  pesan.textContent = 'Berhasil memuat ' + data.length + ' permintaan bantuan.';
+
+}
+
+tombolMuat.addEventListener('click', muatData);
+
+document.getElementById('keluar').addEventListener('click', async () => {
+
+  await supabase.auth.signOut();
+
+  window.location.href = 'auth.html';
+
+});
+
+muatData();
+
+</script>
+
+</body>
+
+</html>
