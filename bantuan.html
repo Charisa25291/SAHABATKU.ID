@@ -76,6 +76,8 @@ button{
 
  cursor:pointer;
 
+ margin-top:5px;
+
 }
 
 button:disabled{opacity:.6;cursor:not-allowed}
@@ -113,6 +115,76 @@ a{color:white;text-decoration:none}
 }
 
 #hasil{font-weight:bold}
+
+.request-item{
+
+ border:1px solid #dbeafe;
+
+ background:#f8fbff;
+
+ padding:16px;
+
+ border-radius:10px;
+
+ margin-top:14px;
+
+}
+
+.request-item p{
+
+ margin:8px 0;
+
+ overflow-wrap:anywhere;
+
+}
+
+.status{
+
+ display:inline-block;
+
+ background:#dbeafe;
+
+ color:#1d4ed8;
+
+ padding:6px 10px;
+
+ border-radius:20px;
+
+ font-size:13px;
+
+ font-weight:bold;
+
+}
+
+.balasan{
+
+ background:#eff6ff;
+
+ padding:12px;
+
+ border-radius:8px;
+
+ margin-top:10px;
+
+}
+
+.kosong{
+
+ color:#64748b;
+
+ text-align:center;
+
+ padding:15px;
+
+}
+
+#pesanRiwayat{
+
+ color:#b91c1c;
+
+ font-weight:bold;
+
+}
 
 </style>
 
@@ -252,6 +324,26 @@ placeholder="Tuliskan hal yang ingin kamu sampaikan..."></textarea>
 
 </div>
 
+<!-- RIWAYAT PERMINTAAN DAN BALASAN GURU BK -->
+
+<div class="card">
+
+<h2>📋 Riwayat Permintaan Bantuan Saya</h2>
+
+<p>Di sini kamu dapat melihat permintaan bantuan yang pernah dikirim dan membaca tanggapan dari Guru BK.</p>
+
+<button type="button" id="muatRiwayat">🔄 Muat Ulang Riwayat</button>
+
+<p id="pesanRiwayat"></p>
+
+<div id="daftarRiwayat">
+
+<p class="kosong">Sedang memuat riwayat...</p>
+
+</div>
+
+</div>
+
 <div class="card notice">
 
 <h3>💙 Pesan untuk Sahabat</h3>
@@ -284,6 +376,186 @@ const form = document.getElementById('helpForm');
 
 const hasil = document.getElementById('hasil');
 
+const daftarRiwayat = document.getElementById('daftarRiwayat');
+
+const pesanRiwayat = document.getElementById('pesanRiwayat');
+
+const tombolMuat = document.getElementById('muatRiwayat');
+
+let userLogin = null;
+
+function buatParagraf(label, isi) {
+
+  const p = document.createElement('p');
+
+  const kuat = document.createElement('strong');
+
+  kuat.textContent = label + ': ';
+
+  p.appendChild(kuat);
+
+  p.appendChild(document.createTextNode(isi || '-'));
+
+  return p;
+
+}
+
+async function periksaLogin() {
+
+  const { data, error } = await supabase.auth.getUser();
+
+  if (error) throw error;
+
+  if (!data.user) {
+
+    throw new Error('Silakan login sebagai siswa terlebih dahulu.');
+
+  }
+
+  userLogin = data.user;
+
+  return userLogin;
+
+}
+
+async function muatRiwayat() {
+
+  daftarRiwayat.replaceChildren();
+
+  pesanRiwayat.textContent = 'Memuat riwayat bantuan...';
+
+  try {
+
+    const user = userLogin || await periksaLogin();
+
+    const { data, error } = await supabase
+
+      .from('permintaan_bantuan')
+
+      .select('id,nama,masalah,cerita,status,balasan,created_at,responded_at')
+
+      .eq('user_id', user.id)
+
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    pesanRiwayat.textContent = '';
+
+    if (!data || data.length === 0) {
+
+      const kosong = document.createElement('p');
+
+      kosong.className = 'kosong';
+
+      kosong.textContent = 'Belum ada permintaan bantuan yang kamu kirim.';
+
+      daftarRiwayat.appendChild(kosong);
+
+      return;
+
+    }
+
+    data.forEach((item) => {
+
+      const kartu = document.createElement('div');
+
+      kartu.className = 'request-item';
+
+      const judul = document.createElement('h3');
+
+      judul.textContent = 'Permintaan Bantuan';
+
+      kartu.appendChild(judul);
+
+      kartu.appendChild(buatParagraf('Nama', item.nama));
+
+      kartu.appendChild(buatParagraf('Masalah', item.masalah));
+
+      kartu.appendChild(buatParagraf('Cerita', item.cerita));
+
+      const tanggal = item.created_at
+
+        ? new Date(item.created_at).toLocaleString('id-ID')
+
+        : '-';
+
+      kartu.appendChild(buatParagraf('Tanggal dikirim', tanggal));
+
+      const status = document.createElement('p');
+
+      const labelStatus = document.createElement('strong');
+
+      labelStatus.textContent = 'Status: ';
+
+      status.appendChild(labelStatus);
+
+      const lencana = document.createElement('span');
+
+      lencana.className = 'status';
+
+      lencana.textContent = item.status || 'Menunggu';
+
+      status.appendChild(lencana);
+
+      kartu.appendChild(status);
+
+      const bagianBalasan = document.createElement('div');
+
+      bagianBalasan.className = 'balasan';
+
+      const judulBalasan = document.createElement('strong');
+
+      judulBalasan.textContent = '💬 Balasan Guru BK';
+
+      bagianBalasan.appendChild(judulBalasan);
+
+      const isiBalasan = document.createElement('p');
+
+      isiBalasan.textContent = item.balasan
+
+        ? item.balasan
+
+        : 'Belum ada balasan dari Guru BK. Silakan periksa kembali nanti.';
+
+      bagianBalasan.appendChild(isiBalasan);
+
+      if (item.responded_at) {
+
+        const tanggalBalasan = document.createElement('small');
+
+        tanggalBalasan.textContent =
+
+          'Dibalas pada: ' +
+
+          new Date(item.responded_at).toLocaleString('id-ID');
+
+        bagianBalasan.appendChild(tanggalBalasan);
+
+      }
+
+      kartu.appendChild(bagianBalasan);
+
+      daftarRiwayat.appendChild(kartu);
+
+    });
+
+  } catch (error) {
+
+    pesanRiwayat.textContent = 'Gagal memuat riwayat: ' + error.message;
+
+    const bantuan = document.createElement('p');
+
+    bantuan.textContent =
+
+      'Pastikan kamu sudah login dan izin melihat riwayat siswa sudah diatur di Supabase.';
+
+    daftarRiwayat.appendChild(bantuan);
+
+  }
+
+}
+
 form.addEventListener('submit', async function(e) {
 
   e.preventDefault();
@@ -304,51 +576,35 @@ form.addEventListener('submit', async function(e) {
 
   try {
 
-    // Memeriksa akun siswa yang sedang login
-
-    const { data: { user }, error: authError } =
-
-      await supabase.auth.getUser();
-
-    if (authError) throw authError;
-
-    if (!user) {
-
-      throw new Error('Silakan login sebagai siswa terlebih dahulu.');
-
-    }
-
-    // Menyimpan permintaan bantuan beserta ID akun siswa
+    const user = userLogin || await periksaLogin();
 
     const { error } = await supabase
 
       .from('permintaan_bantuan')
 
-      .insert([
+      .insert([{
 
-        {
+        user_id: user.id,
 
-          user_id: user.id,
+        nama: nama,
 
-          nama: nama,
+        masalah: masalah,
 
-          masalah: masalah,
+        cerita: cerita
 
-          cerita: cerita
-
-        }
-
-      ]);
+      }]);
 
     if (error) throw error;
 
     hasil.textContent =
 
-      'Permintaan bantuan berhasil dikirim. Silakan hubungi Guru BK secara langsung jika membutuhkan bantuan segera.';
+      'Permintaan bantuan berhasil dikirim. Kamu dapat melihat status dan balasan Guru BK pada bagian riwayat di bawah.';
 
     hasil.style.color = 'green';
 
     form.reset();
+
+    await muatRiwayat();
 
   } catch (error) {
 
@@ -365,6 +621,30 @@ form.addEventListener('submit', async function(e) {
   }
 
 });
+
+tombolMuat.addEventListener('click', muatRiwayat);
+
+// Memuat riwayat saat halaman dibuka
+
+periksaLogin()
+
+  .then(() => muatRiwayat())
+
+  .catch((error) => {
+
+    pesanRiwayat.textContent = error.message;
+
+    daftarRiwayat.replaceChildren();
+
+    const info = document.createElement('p');
+
+    info.className = 'kosong';
+
+    info.textContent = 'Silakan login terlebih dahulu untuk melihat riwayat bantuan.';
+
+    daftarRiwayat.appendChild(info);
+
+  });
 
 </script>
 
