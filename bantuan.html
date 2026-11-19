@@ -78,6 +78,8 @@ button{
 
 }
 
+button:disabled{opacity:.6;cursor:not-allowed}
+
 input,textarea,select{
 
  width:100%;
@@ -85,6 +87,8 @@ input,textarea,select{
  padding:12px;
 
  margin-top:8px;
+
+ margin-bottom:15px;
 
  border:1px solid #ccd6e5;
 
@@ -107,6 +111,8 @@ a{color:white;text-decoration:none}
  border-radius:10px;
 
 }
+
+#hasil{font-weight:bold}
 
 </style>
 
@@ -200,17 +206,19 @@ keputusan yang baik dalam kehidupan.</p>
 
 <h2>📩 Formulir Permintaan Bantuan</h2>
 
-<p>Formulir ini hanya contoh tampilan. Untuk meminta
+<p>Silakan isi formulir ini jika kamu ingin menyampaikan
 
-bantuan sungguhan, sampaikan kepada Guru BK atau
+masalah kepada Guru BK. Gunakan nama atau inisial yang
 
-orang dewasa yang kamu percaya.</p>
+sesuai dengan ketentuan sekolah.</p>
 
 <form id="helpForm">
 
 <label>Nama atau inisial</label>
 
-<input id="nama" type="text" required placeholder="Masukkan nama atau inisial">
+<input id="nama" type="text" required
+
+placeholder="Masukkan nama atau inisial">
 
 <label>Masalah yang ingin dibicarakan</label>
 
@@ -232,7 +240,9 @@ orang dewasa yang kamu percaya.</p>
 
 <label>Ceritakan secara singkat</label>
 
-<textarea id="cerita" required placeholder="Tuliskan hal yang ingin kamu sampaikan..."></textarea>
+<textarea id="cerita" required
+
+placeholder="Tuliskan hal yang ingin kamu sampaikan..."></textarea>
 
 <button type="submit">Kirim Permintaan</button>
 
@@ -267,49 +277,97 @@ di lingkungan sekolah.</p>
 </div>
 
 <script type="module">
+
 import { supabase } from './supabase.js';
 
 const form = document.getElementById('helpForm');
+
 const hasil = document.getElementById('hasil');
 
 form.addEventListener('submit', async function(e) {
+
   e.preventDefault();
 
   const nama = document.getElementById('nama').value.trim();
+
   const masalah = document.getElementById('masalah').value;
+
   const cerita = document.getElementById('cerita').value.trim();
 
   const tombol = form.querySelector('button[type="submit"]');
 
   tombol.disabled = true;
+
   tombol.textContent = 'Mengirim...';
+
   hasil.textContent = '';
 
   try {
+
+    // Memeriksa akun siswa yang sedang login
+
+    const { data: { user }, error: authError } =
+
+      await supabase.auth.getUser();
+
+    if (authError) throw authError;
+
+    if (!user) {
+
+      throw new Error('Silakan login sebagai siswa terlebih dahulu.');
+
+    }
+
+    // Menyimpan permintaan bantuan beserta ID akun siswa
+
     const { error } = await supabase
+
       .from('permintaan_bantuan')
+
       .insert([
+
         {
+
+          user_id: user.id,
+
           nama: nama,
+
           masalah: masalah,
+
           cerita: cerita
+
         }
+
       ]);
 
     if (error) throw error;
 
     hasil.textContent =
+
       'Permintaan bantuan berhasil dikirim. Silakan hubungi Guru BK secara langsung jika membutuhkan bantuan segera.';
+
+    hasil.style.color = 'green';
 
     form.reset();
 
   } catch (error) {
+
     hasil.textContent = 'Gagal mengirim: ' + error.message;
+
+    hasil.style.color = 'red';
+
   } finally {
+
     tombol.disabled = false;
+
     tombol.textContent = 'Kirim Permintaan';
+
   }
+
 });
+
 </script>
+
 </body>
+
 </html>
