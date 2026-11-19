@@ -154,13 +154,11 @@ a{color:#2563eb;text-decoration:none}
 
 </div>
 
-<script type="module">
-
-import { supabase } from './supabase.js';
+<script>
 
 let mode = 'login';
 
-window.showForm = function(type){
+function showForm(type) {
 
   mode = type;
 
@@ -176,89 +174,103 @@ window.showForm = function(type){
 
     type === 'login' ? 'Masuk' : 'Daftar Sekarang';
 
-  document.getElementById('loginTab').classList.toggle('active',type==='login');
+  document.getElementById('loginTab').classList.toggle('active', type === 'login');
 
-  document.getElementById('registerTab').classList.toggle('active',type==='register');
+  document.getElementById('registerTab').classList.toggle('active', type === 'register');
 
   document.getElementById('message').textContent = '';
 
-};
+}
 
-document.getElementById('authForm').addEventListener('submit',async(e)=>{
+</script>
+
+<script type="module">
+
+import { supabase } from './supabase.js';
+
+document.getElementById('authForm').addEventListener('submit', async function(e) {
 
   e.preventDefault();
 
-  const email=document.getElementById('email').value.trim();
+  const email = document.getElementById('email').value.trim();
 
-  const password=document.getElementById('password').value;
+  const password = document.getElementById('password').value;
 
-  const message=document.getElementById('message');
+  const message = document.getElementById('message');
 
-  const submit=document.getElementById('submitButton');
+  const submit = document.getElementById('submitButton');
 
-  submit.disabled=true;
+  submit.disabled = true;
 
-  message.textContent='Mohon tunggu...';
+  message.textContent = 'Sedang memproses...';
 
-  try{
+  try {
 
-    if(mode==='register'){
+    if (mode === 'register') {
 
-      const name=document.getElementById('name').value.trim();
+      const name = document.getElementById('name').value.trim();
 
-      const role=document.getElementById('role').value;
+      const role = document.getElementById('role').value;
 
-      if(!name){
+      if (!name) throw new Error('Nama lengkap wajib diisi.');
 
-        throw new Error('Nama lengkap harus diisi.');
-
-      }
-
-      const {data,error}=await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
 
         email,
 
         password,
 
-        options:{
+        options: {
 
-          data:{full_name:name,role:role}
+          data: {
+
+            full_name: name,
+
+            role: role
+
+          }
 
         }
 
       });
 
-      if(error) throw error;
+      if (error) throw error;
 
-      message.textContent=data.session
+      message.textContent = data.session
 
         ? 'Pendaftaran berhasil! Silakan login.'
 
-        : 'Pendaftaran berhasil. Periksa email untuk verifikasi akun.';
+        : 'Pendaftaran berhasil. Silakan periksa email untuk verifikasi.';
 
-    }else{
+    } else {
 
-      const {data,error}=await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
 
-        email,password
+        email,
+
+        password
 
       });
 
-      if(error) throw error;
+      if (error) throw error;
 
-      message.textContent='Login berhasil! Mengalihkan...';
+      message.textContent = 'Login berhasil!';
 
-      window.location.href='dashboard.html';
+      setTimeout(() => {
+
+        window.location.href = 'dashboard.html';
+
+      }, 1000);
 
     }
 
-  }catch(error){
+  } catch (error) {
 
-    message.textContent='Gagal: '+error.message;
+    message.textContent = 'Terjadi kesalahan: ' + error.message;
 
-  }finally{
+  } finally {
 
-    submit.disabled=false;
+    submit.disabled = false;
 
   }
 
