@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+
+<html lang="id">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Angket Sahabatku.id</title>
+
+<style>
+
+*{box-sizing:border-box}
+
+body{
+
+ font-family:Arial,sans-serif;
+
+ background:#edf4ff;
+
+ color:#24334d;
+
+ margin:0;
+
+ padding:20px;
+
+}
+
+header{
+
+ background:#2563eb;
+
+ color:white;
+
+ text-align:center;
+
+ padding:25px;
+
+ border-radius:15px;
+
+}
+
+.container{max-width:800px;margin:25px auto}
+
+.card{
+
+ background:white;
+
+ padding:22px;
+
+ border-radius:14px;
+
+ margin-bottom:18px;
+
+ box-shadow:0 3px 12px #0001;
+
+}
+
+h2{color:#2563eb}
+
+input[type=text],select{
+
+ width:100%;
+
+ padding:12px;
+
+ border:1px solid #ccd6e5;
+
+ border-radius:8px;
+
+ margin-top:8px;
+
+}
+
+.item{padding:16px 0;border-bottom:1px solid #eee}
+
+.option{
+
+ display:inline-block;
+
+ margin:10px 12px 0 0;
+
+ font-size:14px;
+
+}
+
+button{
+
+ background:#2563eb;
+
+ color:white;
+
+ border:0;
+
+ padding:13px 22px;
+
+ border-radius:8px;
+
+ cursor:pointer;
+
+}
+
+a{color:white;text-decoration:none}
+
+#result{
+
+ display:none;
+
+ background:#dbeafe;
+
+ padding:18px;
+
+ border-radius:10px;
+
+ margin-top:20px;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>💙 Angket Sahabatku.id</h1>
+
+<p>Kenali Pertemanan Sehat Bersama Kami</p>
+
+</header>
+
+<div class="container">
+
+<div class="card">
+
+<h2>Petunjuk Pengisian</h2>
+
+<p>Halo, Sahabat! Angket ini bertujuan mengetahui
+
+pandangan dan pengalaman siswa tentang pertemanan
+
+sehat di sekolah.</p>
+
+<p>Jawablah sesuai keadaan yang sebenarnya.
+
+Tidak ada jawaban benar atau salah. Jawabanmu
+
+akan dijaga kerahasiaannya dan digunakan untuk
+
+pengembangan kegiatan Sahabatku.id.</p>
+
+</div>
+
+<form id="survey">
+
+<div class="card">
+
+<h2>Identitas Responden</h2>
+
+<label>Nama atau inisial (boleh dikosongkan)</label>
+
+<input type="text" id="nama" placeholder="Masukkan nama atau inisial">
+
+<label style="display:block;margin-top:15px">Kelas</label>
+
+<select id="kelas" required>
+
+<option value="">Pilih kelas</option>
+
+<option>Kelas 7</option>
+
+<option>Kelas 8</option>
+
+<option>Kelas 9</option>
+
+</select>
+
+</div>
+
+<div class="card">
+
+<h2>Pernyataan Angket</h2>
+
+<p>Pilih satu jawaban yang paling sesuai dengan dirimu.</p>
+
+<div id="items"></div>
+
+</div>
+
+<div class="card">
+
+<button type="submit">Kirim Jawaban</button>
+
+</div>
+
+</form>
+
+<div id="result"></div>
+
+<div class="card">
+
+<a href="dashboard.html">
+
+<button type="button">← Kembali ke Dashboard</button>
+
+</a>
+
+</div>
+
+</div>
+
+<script>
+
+const statements=[
+
+"Saya menghargai pendapat teman meskipun berbeda dengan pendapat saya.",
+
+"Saya mau membantu teman yang sedang mengalami kesulitan.",
+
+"Saya mendengarkan ketika teman sedang bercerita.",
+
+"Saya menerima teman tanpa membeda-bedakan keadaan fisiknya.",
+
+"Saya berusaha menyelesaikan masalah dengan berbicara baik-baik.",
+
+"Saya mengejek teman ketika melakukan kesalahan.",
+
+"Saya sengaja mengucilkan teman dari kelompok bermain.",
+
+"Saya menyebarkan cerita buruk tentang teman.",
+
+"Saya ikut menertawakan teman yang sedang dihina.",
+
+"Saya merasa senang jika teman mendapatkan perlakuan buruk."
+
+];
+
+const items=document.getElementById('items');
+
+statements.forEach((text,index)=>{
+
+ const div=document.createElement('div');
+
+ div.className='item';
+
+ div.innerHTML=`<b>${index+1}. ${text}</b>
+
+ <div>
+
+ ${['SS','S','TS','STS'].map((v,i)=>`
+
+ <label class="option">
+
+ <input type="radio" name="q${index}" value="${v}" required>
+
+ ${['Sangat Setuju','Setuju','Tidak Setuju','Sangat Tidak Setuju'][i]}
+
+ </label>`).join('')}
+
+ </div>`;
+
+ items.appendChild(div);
+
+});
+
+document.getElementById('survey').addEventListener('submit',function(e){
+
+ e.preventDefault();
+
+ const answers=statements.map((_,i)=>
+
+ document.querySelector(`input[name="q${i}"]:checked`).value
+
+ );
+
+ const result=document.getElementById('result');
+
+ result.style.display='block';
+
+ result.innerHTML=`
+
+ <h2>Terima kasih, Sahabat!</h2>
+
+ <p>Jawaban angket berhasil dikirim pada halaman ini.
+
+ Silakan hubungi Guru BK jika membutuhkan bantuan.</p>
+
+ <button onclick="location.reload()">Isi Kembali</button>
+
+ `;
+
+ result.scrollIntoView({behavior:'smooth'});
+
+});
+
+</script>
+
+</body>
+
+</html>
