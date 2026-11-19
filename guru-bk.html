@@ -6,113 +6,136 @@
 <title>Dashboard Guru BK - Sahabatku.id</title>
 
 <style>
-* { box-sizing: border-box; }
+*{box-sizing:border-box}
 
-body {
-  font-family: Arial, sans-serif;
-  background: #edf4ff;
-  margin: 0;
-  padding: 20px;
-  color: #24324a;
+body{
+  font-family:Arial,sans-serif;
+  background:#edf4ff;
+  margin:0;
+  padding:20px;
+  color:#24324a;
 }
 
-.container {
-  max-width: 1100px;
-  margin: auto;
+.container{
+  max-width:1100px;
+  margin:auto;
 }
 
-header {
-  background: #315caa;
-  color: white;
-  padding: 25px;
-  border-radius: 15px;
-  margin-bottom: 20px;
+header{
+  background:#315caa;
+  color:white;
+  padding:25px;
+  border-radius:15px;
+  margin-bottom:20px;
 }
 
-.card {
-  background: white;
-  padding: 22px;
-  border-radius: 14px;
-  margin-bottom: 20px;
-  box-shadow: 0 3px 12px #00000010;
+.card{
+  background:white;
+  padding:22px;
+  border-radius:14px;
+  margin-bottom:20px;
+  box-shadow:0 3px 12px #00000010;
 }
 
-button, select, textarea {
-  font: inherit;
+button,select,textarea{
+  font:inherit;
 }
 
-button {
-  background: #315caa;
-  color: white;
-  border: none;
-  padding: 11px 17px;
-  border-radius: 8px;
-  cursor: pointer;
-  margin: 5px 0;
+button{
+  background:#315caa;
+  color:white;
+  border:none;
+  padding:11px 17px;
+  border-radius:8px;
+  cursor:pointer;
+  margin:5px 0;
 }
 
-button:hover { background: #234680; }
-
-select, textarea {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ccd5e5;
-  border-radius: 8px;
-  margin: 7px 0;
+button:hover{
+  background:#234680;
 }
 
-textarea {
-  min-height: 90px;
-  resize: vertical;
+button:disabled{
+  opacity:.6;
+  cursor:not-allowed;
 }
 
-#pesan {
-  color: #315caa;
-  font-weight: bold;
+select,textarea{
+  width:100%;
+  padding:10px;
+  border:1px solid #ccd5e5;
+  border-radius:8px;
+  margin:7px 0;
 }
 
-.table-wrap { overflow-x: auto; }
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 850px;
+textarea{
+  min-height:90px;
+  resize:vertical;
 }
 
-th, td {
-  padding: 12px;
-  border-bottom: 1px solid #ddd;
-  text-align: left;
-  vertical-align: top;
+#pesan{
+  color:#315caa;
+  font-weight:bold;
+  line-height:1.6;
 }
 
-th { background: #e8f0ff; }
+.table-wrap{
+  overflow-x:auto;
+}
 
-.keterangan {
-  color: #667085;
-  font-size: 13px;
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:850px;
+}
+
+th,td{
+  padding:12px;
+  border-bottom:1px solid #ddd;
+  text-align:left;
+  vertical-align:top;
+  line-height:1.5;
+}
+
+th{
+  background:#e8f0ff;
+}
+
+.keterangan{
+  color:#667085;
+  font-size:13px;
+}
+
+.identitas{
+  color:#eaf1ff;
+  font-size:14px;
 }
 </style>
 </head>
 
 <body>
+
 <div class="container">
 
 <header>
-  <h1>Dashboard Guru BK</h1>
+  <h1>💙 Dashboard Guru BK</h1>
   <p>Sahabatku.id - Layanan Bimbingan dan Konseling</p>
+  <p class="identitas" id="identitas">Memeriksa akun...</p>
 </header>
 
 <div class="card">
   <h2>Selamat Datang, Guru BK!</h2>
-  <p>Kelola permintaan bantuan dan berikan tanggapan kepada siswa.</p>
+  <p>Di halaman ini Guru BK dapat membaca permintaan bantuan siswa, memberikan tanggapan, dan memperbarui status penanganan.</p>
+
   <button id="muat">Muat Data Permintaan</button>
   <button id="keluar">Keluar</button>
+
   <p id="pesan">Memeriksa akun...</p>
 </div>
 
 <div class="card">
-  <h2>Daftar Permintaan Bantuan Siswa</h2>
+  <h2>📩 Daftar Permintaan Bantuan Siswa</h2>
+
   <div class="table-wrap">
     <table>
       <thead>
@@ -124,8 +147,11 @@ th { background: #e8f0ff; }
           <th>Balasan Guru BK</th>
         </tr>
       </thead>
+
       <tbody id="daftar">
-        <tr><td colspan="5">Memuat data...</td></tr>
+        <tr>
+          <td colspan="5">Memuat data...</td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -138,73 +164,111 @@ import { supabase } from './supabase.js';
 
 const pesan = document.getElementById('pesan');
 const daftar = document.getElementById('daftar');
+const identitas = document.getElementById('identitas');
 
-async function periksaAkun() {
-  const { data: { user }, error } = await supabase.auth.getUser();
+let akunGuru = null;
 
-  if (error || !user) {
-    pesan.textContent = 'Silakan login terlebih dahulu.';
+async function periksaAkun(){
+
+  const {data:{user},error} =
+    await supabase.auth.getUser();
+
+  if(error || !user){
+    pesan.textContent =
+      'Silakan login terlebih dahulu.';
     return false;
   }
 
-  const { data: role, error: roleError } = await supabase
-    .from('user_roles')
-    .select('role')
-    .eq('user_id', user.id)
-    .maybeSingle();
+  const {data:roles,error:roleError} =
+    await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id',user.id)
+      .eq('role','guru_bk');
 
-  if (roleError || !role || role.role !== 'guru_bk') {
-    pesan.textContent = 'Akses ditolak. Halaman khusus Guru BK.';
+  if(roleError){
+    pesan.textContent =
+      'Gagal memeriksa peran: ' + roleError.message;
     return false;
   }
 
-  pesan.textContent = 'Login berhasil sebagai Guru BK.';
+  if(!roles || roles.length === 0){
+    pesan.textContent =
+      'Akses ditolak. Akun ini belum memiliki peran Guru BK.';
+    return false;
+  }
+
+  akunGuru = user;
+
+  identitas.textContent =
+    'Login sebagai Guru BK: ' + user.email;
+
+  pesan.textContent =
+    'Login berhasil sebagai Guru BK.';
+
   return true;
 }
 
-async function muatData() {
-  if (!(await periksaAkun())) {
-    daftar.innerHTML = '<tr><td colspan="5">Akses tidak tersedia.</td></tr>';
+function buatSel(teks){
+  const td = document.createElement('td');
+  td.textContent = teks || '-';
+  return td;
+}
+
+async function muatData(){
+
+  daftar.innerHTML =
+    '<tr><td colspan="5">Sedang mengambil data...</td></tr>';
+
+  if(!(await periksaAkun())){
+    daftar.innerHTML =
+      '<tr><td colspan="5">Tidak dapat mengakses data.</td></tr>';
     return;
   }
 
-  pesan.textContent = 'Mengambil data permintaan bantuan...';
+  pesan.textContent =
+    'Mengambil permintaan bantuan siswa...';
 
-  const { data, error } = await supabase
+  const {data,error} = await supabase
     .from('permintaan_bantuan')
-    .select('id, nama, masalah, cerita, status, balasan, created_at')
-    .order('created_at', { ascending: false });
+    .select('id,nama,masalah,cerita,status,balasan,created_at')
+    .order('created_at',{ascending:false});
 
-  if (error) {
-    pesan.textContent = 'Gagal mengambil data: ' + error.message;
+  if(error){
+    pesan.textContent =
+      'Gagal mengambil data: ' + error.message;
+
+    daftar.innerHTML =
+      '<tr><td colspan="5">Terjadi kesalahan saat mengambil data.</td></tr>';
+
     return;
   }
 
   daftar.innerHTML = '';
 
-  if (!data || data.length === 0) {
-    daftar.innerHTML = '<tr><td colspan="5">Belum ada permintaan bantuan.</td></tr>';
-    pesan.textContent = 'Belum ada data.';
+  if(!data || data.length === 0){
+    daftar.innerHTML =
+      '<tr><td colspan="5">Belum ada permintaan bantuan siswa.</td></tr>';
+
+    pesan.textContent =
+      'Data berhasil diperiksa, tetapi belum ada permintaan bantuan yang dapat ditampilkan.';
+
     return;
   }
 
-  data.forEach(item => {
-    const baris = document.createElement('tr');
+  data.forEach(item=>{
 
-    function buatSel(teks) {
-      const td = document.createElement('td');
-      td.textContent = teks || '-';
-      return td;
-    }
+    const baris = document.createElement('tr');
 
     baris.appendChild(buatSel(item.nama));
     baris.appendChild(buatSel(item.masalah));
     baris.appendChild(buatSel(item.cerita));
 
+    // Kolom status
     const selStatus = document.createElement('td');
     const pilihStatus = document.createElement('select');
 
-    ['Menunggu', 'Diproses', 'Selesai'].forEach(status => {
+    ['Menunggu','Diproses','Selesai'].forEach(status=>{
       const opsi = document.createElement('option');
       opsi.value = status;
       opsi.textContent = status;
@@ -212,12 +276,17 @@ async function muatData() {
     });
 
     pilihStatus.value = item.status || 'Menunggu';
+
     selStatus.appendChild(pilihStatus);
     baris.appendChild(selStatus);
 
+    // Kolom balasan
     const selBalasan = document.createElement('td');
+
     const kotakBalasan = document.createElement('textarea');
-    kotakBalasan.placeholder = 'Tuliskan tanggapan untuk siswa...';
+    kotakBalasan.placeholder =
+      'Tuliskan tanggapan untuk siswa...';
+
     kotakBalasan.value = item.balasan || '';
 
     const tombolSimpan = document.createElement('button');
@@ -226,51 +295,71 @@ async function muatData() {
     const info = document.createElement('p');
     info.className = 'keterangan';
 
-    tombolSimpan.addEventListener('click', async () => {
+    tombolSimpan.addEventListener('click',async()=>{
+
       tombolSimpan.disabled = true;
       tombolSimpan.textContent = 'Menyimpan...';
       info.textContent = '';
 
-      const { error: updateError } = await supabase
+      const {error:updateError} = await supabase
         .from('permintaan_bantuan')
         .update({
-          status: pilihStatus.value,
-          balasan: kotakBalasan.value.trim(),
-          responded_at: new Date().toISOString()
+          status:pilihStatus.value,
+          balasan:kotakBalasan.value.trim(),
+          responded_at:new Date().toISOString()
         })
-        .eq('id', item.id);
+        .eq('id',item.id);
 
       tombolSimpan.disabled = false;
       tombolSimpan.textContent = 'Simpan Balasan';
 
-      if (updateError) {
-        info.textContent = 'Gagal menyimpan: ' + updateError.message;
+      if(updateError){
+        info.textContent =
+          'Gagal menyimpan: ' + updateError.message;
         return;
       }
 
-      info.textContent = 'Balasan dan status berhasil disimpan.';
-      pesan.textContent = 'Data berhasil diperbarui.';
+      item.status = pilihStatus.value;
+      item.balasan = kotakBalasan.value.trim();
+
+      info.textContent =
+        'Status dan balasan berhasil disimpan.';
+
+      pesan.textContent =
+        'Data permintaan berhasil diperbarui.';
     });
 
     selBalasan.appendChild(kotakBalasan);
     selBalasan.appendChild(tombolSimpan);
     selBalasan.appendChild(info);
+
     baris.appendChild(selBalasan);
 
     daftar.appendChild(baris);
   });
 
-  pesan.textContent = 'Berhasil memuat ' + data.length + ' permintaan bantuan.';
+  pesan.textContent =
+    'Berhasil memuat ' + data.length +
+    ' permintaan bantuan siswa.';
 }
 
-document.getElementById('muat').addEventListener('click', muatData);
+// Tombol muat data
+document.getElementById('muat')
+  .addEventListener('click',muatData);
 
-document.getElementById('keluar').addEventListener('click', async () => {
-  await supabase.auth.signOut();
-  window.location.href = 'auth.html';
-});
+// Tombol keluar
+document.getElementById('keluar')
+  .addEventListener('click',async()=>{
 
+    await supabase.auth.signOut();
+
+    window.location.href =
+      'auth.html?role=guru_bk';
+  });
+
+// Jalankan saat halaman dibuka
 muatData();
+
 </script>
 
 </body>
