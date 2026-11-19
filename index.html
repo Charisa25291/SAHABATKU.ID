@@ -2,352 +2,79 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sahabatku.id - Pertemanan Sehat</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sahabatku.id</title>
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  scroll-behavior: smooth;
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:linear-gradient(135deg,#eaf2ff,#f7faff);
+  color:#24324a;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
 }
-
-body {
-  font-family: Arial, sans-serif;
-  background: #f5f8ff;
-  color: #24334d;
+.container{
+  background:white;
+  width:100%;
+  max-width:480px;
+  padding:30px 22px;
+  border-radius:22px;
+  text-align:center;
+  box-shadow:0 8px 30px #315cba20;
 }
-
-header {
-  background: white;
-  padding: 18px 7%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 2px 12px #00000010;
-  position: sticky;
-  top: 0;
-  z-index: 10;
+.logo{
+  font-size:45px;
+  margin-bottom:8px;
 }
-
-.logo {
-  font-size: 24px;
-  font-weight: bold;
-  color: #2563eb;
+h1{color:#315cba;margin:5px 0}
+p{color:#64748b;line-height:1.6}
+.pilihan{
+  display:block;
+  width:100%;
+  padding:16px;
+  margin-top:14px;
+  border:0;
+  border-radius:12px;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+  text-decoration:none;
 }
-
-nav {
-  display: flex;
-  gap: 22px;
-}
-
-nav a {
-  text-decoration: none;
-  color: #334155;
-  font-size: 14px;
-  font-weight: bold;
-}
-
-nav a:hover {
-  color: #2563eb;
-}
-
-.hero {
-  padding: 85px 8%;
-  background: linear-gradient(120deg,#e0edff,#f4f8ff);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 35px;
-}
-
-.hero-content {
-  max-width: 600px;
-}
-
-.hero h1 {
-  font-size: 45px;
-  line-height: 1.2;
-  color: #1746a2;
-  margin-bottom: 20px;
-}
-
-.hero p {
-  line-height: 1.8;
-  color: #52627a;
-  font-size: 17px;
-  margin-bottom: 25px;
-}
-
-.hero-image {
-  font-size: 130px;
-  text-align: center;
-  min-width: 220px;
-}
-
-.btn {
-  display: inline-block;
-  background: #2563eb;
-  color: white;
-  padding: 14px 25px;
-  border-radius: 10px;
-  text-decoration: none;
-  font-weight: bold;
-}
-
-.btn:hover {
-  background: #1746a2;
-}
-
-section {
-  padding: 65px 8%;
-}
-
-.section-title {
-  text-align: center;
-  margin-bottom: 35px;
-}
-
-.section-title h2 {
-  color: #1746a2;
-  font-size: 30px;
-  margin-bottom: 12px;
-}
-
-.section-title p {
-  color: #64748b;
-  line-height: 1.7;
-}
-
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
-  gap: 22px;
-}
-
-.card {
-  background: white;
-  padding: 27px;
-  border-radius: 16px;
-  box-shadow: 0 5px 20px #00000009;
-  transition: .2s;
-}
-
-.card:hover {
-  transform: translateY(-5px);
-}
-
-.card .emoji {
-  font-size: 42px;
-  margin-bottom: 16px;
-}
-
-.card h3 {
-  color: #1746a2;
-  margin-bottom: 12px;
-}
-
-.card p {
-  font-size: 14px;
-  color: #64748b;
-  line-height: 1.7;
-}
-
-.card a {
-  display: inline-block;
-  margin-top: 18px;
-  color: #2563eb;
-  font-weight: bold;
-  text-decoration: none;
-}
-
-.about {
-  background: white;
-  text-align: center;
-}
-
-.about p {
-  max-width: 750px;
-  margin: auto;
-  line-height: 1.9;
-  color: #52627a;
-}
-
-.cta {
-  text-align: center;
-  background: #e5efff;
-}
-
-.cta h2 {
-  color: #1746a2;
-  margin-bottom: 15px;
-}
-
-.cta p {
-  margin-bottom: 25px;
-  color: #52627a;
-}
-
-footer {
-  background: #173b79;
-  color: white;
-  text-align: center;
-  padding: 28px;
-  font-size: 14px;
-  line-height: 1.8;
-}
-
-@media(max-width:700px) {
-  header {
-    flex-direction: column;
-    gap: 15px;
-  }
-  nav {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 13px;
-  }
-  .hero {
-    flex-direction: column;
-    text-align: center;
-    padding: 55px 7%;
-  }
-  .hero h1 {
-    font-size: 34px;
-  }
-  .hero-image {
-    font-size: 90px;
-  }
-}
+.siswa{background:#315cba;color:white}
+.admin{background:#e8efff;color:#315cba}
+.guru{background:#dff5e9;color:#187345}
+.pilihan:hover{opacity:.85}
+small{display:block;margin-top:25px;color:#94a3b8}
 </style>
 </head>
-
 <body>
-
-<header>
-  <div class="logo">💙 Sahabatku.id</div>
-  <nav>
-    <a href="#beranda">Beranda</a>
-    <a href="#tentang">Tentang</a>
-    <a href="#materi">Materi</a>
-    <a href="#fitur">Fitur</a>
-    <a href="#kontak">Kontak</a>
-  </nav>
-</header>
-
-<main>
-<section class="hero" id="beranda">
-  <div class="hero-content">
-    <h1>Teman Baik, Sekolah Nyaman, Masa Depan Cerah!</h1>
-    <p>
-      Selamat datang di Sahabatku.id, media E-Guidance
-      untuk membantu siswa membangun pertemanan sehat,
-      meningkatkan kepedulian, dan mencegah perundungan
-      di lingkungan sekolah.
-    </p>
-    <a href="#fitur" class="btn">Jelajahi Sekarang →</a>
-  </div>
-  <div class="hero-image">🤝💙</div>
-</section>
-
-<section class="about" id="tentang">
-  <div class="section-title">
-    <h2>Apa Itu Sahabatku.id?</h2>
-    <p>Mengenal media bimbingan dan konseling berbasis digital.</p>
-  </div>
+<div class="container">
+  <div class="logo">💙</div>
+  <h1>Sahabatku.id</h1>
   <p>
-    Sahabatku.id merupakan media E-Guidance berbasis digital
-    yang dikembangkan untuk mendukung keterampilan pertemanan
-    sehat dan pencegahan perundungan pada siswa SMP.
-    Melalui media ini, siswa dapat belajar mengenali hubungan
-    pertemanan yang positif, menghargai perbedaan, membangun
-    komunikasi yang baik, serta memahami cara menghadapi
-    tindakan perundungan.
+    Teman digital untuk membangun pertemanan sehat,
+    saling menghargai, dan mencegah perundungan.
   </p>
-</section>
 
-<section id="fitur">
-  <div class="section-title">
-    <h2>Fitur Sahabatku.id</h2>
-    <p>Berbagai fasilitas belajar untuk membangun pertemanan sehat.</p>
-  </div>
+  <h3>Silakan Pilih Jenis Login</h3>
 
-  <div class="cards">
-    <div class="card">
-      <div class="emoji">📚</div>
-      <h3>Materi Edukasi</h3>
-      <p>Pelajari arti pertemanan sehat, empati, komunikasi, dan pencegahan perundungan.</p>
-      <a href="#materi">Pelajari materi →</a>
-    </div>
+  <a class="pilihan siswa" href="auth.html?role=siswa">
+    Login Siswa
+  </a>
 
-    <div class="card">
-      <div class="emoji">📝</div>
-      <h3>Kuis Interaktif</h3>
-      <p>Uji pengetahuanmu melalui pertanyaan seputar pertemanan sehat.</p>
-      <a href="#kontak">Segera hadir →</a>
-    </div>
+  <a class="pilihan admin" href="auth.html?role=admin">
+    Login Admin
+  </a>
 
-    <div class="card">
-      <div class="emoji">📋</div>
-      <h3>Angket Siswa</h3>
-      <p>Kenali pengalaman dan pemahaman tentang hubungan sosial di sekolah.</p>
-      <a href="#kontak">Segera hadir →</a>
-    </div>
+  <a class="pilihan guru" href="auth.html?role=guru_bk">
+    Login Guru BK
+  </a>
 
-    <div class="card">
-      <div class="emoji">💬</div>
-      <h3>Layanan BK</h3>
-      <p>Dapatkan informasi dan panduan untuk mencari bantuan ketika menghadapi masalah pertemanan.</p>
-      <a href="#kontak">Segera hadir →</a>
-    </div>
-
-    <div class="card">
-      <div class="emoji">👩‍🏫</div>
-      <h3>Guru BK</h3>
-      <p>Media pendukung guru BK dalam memberikan edukasi kepada siswa.</p>
-      <a href="#kontak">Segera hadir →</a>
-    </div>
-  </div>
-</section>
-
-<section id="materi">
-  <div class="section-title">
-    <h2>Belajar Pertemanan Sehat</h2>
-    <p>Kenali beberapa hal penting untuk menjadi teman yang baik.</p>
-  </div>
-
-  <div class="cards">
-    <div class="card">
-      <div class="emoji">❤️</div>
-      <h3>Saling Menghargai</h3>
-      <p>Menghormati pendapat, perbedaan, dan perasaan teman.</p>
-    </div>
-    <div class="card">
-      <div class="emoji">🤝</div>
-      <h3>Saling Mendukung</h3>
-      <p>Memberikan semangat dan membantu teman ketika membutuhkan.</p>
-    </div>
-    <div class="card">
-      <div class="emoji">🛡️</div>
-      <h3>Cegah Perundungan</h3>
-      <p>Memahami tindakan perundungan dan berani mencari bantuan.</p>
-    </div>
-  </div>
-</section>
-
-<section class="cta" id="kontak">
-  <h2>Mari Ciptakan Pertemanan yang Sehat!</h2>
-  <p>Mulai dari diri sendiri, saling menghargai, dan saling peduli.</p>
-  <a href="#beranda" class="btn">Kembali ke Beranda</a>
-</section>
-</main>
-
-<footer>
-  <strong>💙 Sahabatku.id</strong>
-  <p>Teman Baik, Sekolah Nyaman, Masa Depan Cerah.</p>
-  <p>Media E-Guidance untuk Siswa SMP</p>
-  <p>© 2026 Sahabatku.id. All Rights Reserved.</p>
-</footer>
-
+  <small>© 2026 Sahabatku.id</small>
+</div>
 </body>
 </html>
