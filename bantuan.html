@@ -266,20 +266,50 @@ di lingkungan sekolah.</p>
 
 </div>
 
-<script>
+<script type="module">
+import { supabase } from './supabase.js';
 
-document.getElementById('helpForm').addEventListener('submit',function(e){
+const form = document.getElementById('helpForm');
+const hasil = document.getElementById('hasil');
 
- e.preventDefault();
+form.addEventListener('submit', async function(e) {
+  e.preventDefault();
 
- document.getElementById('hasil').textContent=
+  const nama = document.getElementById('nama').value.trim();
+  const masalah = document.getElementById('masalah').value;
+  const cerita = document.getElementById('cerita').value.trim();
 
- 'Terima kasih sudah berani bercerita. Formulir contoh ini belum mengirim data kepada Guru BK. Silakan sampaikan permintaan bantuan secara langsung kepada Guru BK.';
+  const tombol = form.querySelector('button[type="submit"]');
 
+  tombol.disabled = true;
+  tombol.textContent = 'Mengirim...';
+  hasil.textContent = '';
+
+  try {
+    const { error } = await supabase
+      .from('permintaan_bantuan')
+      .insert([
+        {
+          nama: nama,
+          masalah: masalah,
+          cerita: cerita
+        }
+      ]);
+
+    if (error) throw error;
+
+    hasil.textContent =
+      'Permintaan bantuan berhasil dikirim. Silakan hubungi Guru BK secara langsung jika membutuhkan bantuan segera.';
+
+    form.reset();
+
+  } catch (error) {
+    hasil.textContent = 'Gagal mengirim: ' + error.message;
+  } finally {
+    tombol.disabled = false;
+    tombol.textContent = 'Kirim Permintaan';
+  }
 });
-
 </script>
-
 </body>
-
 </html>
