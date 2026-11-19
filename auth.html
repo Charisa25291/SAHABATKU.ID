@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+
+<html lang="id">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Login Sahabatku.id</title>
+
+<style>
+
+*{box-sizing:border-box}
+
+body{
+
+  font-family:Arial,sans-serif;
+
+  background:#edf4ff;
+
+  margin:0;
+
+  padding:30px 15px;
+
+  color:#24334d;
+
+}
+
+.container{
+
+  max-width:430px;
+
+  margin:30px auto;
+
+  background:white;
+
+  padding:30px;
+
+  border-radius:18px;
+
+  box-shadow:0 5px 25px #0001;
+
+}
+
+.logo{text-align:center;color:#2563eb;font-size:26px;font-weight:bold}
+
+h2{text-align:center;color:#1746a2}
+
+p{text-align:center;color:#64748b;line-height:1.6}
+
+.tabs{display:flex;gap:10px;margin:25px 0}
+
+.tabs button{
+
+  flex:1;padding:12px;border:0;border-radius:8px;
+
+  background:#e5edff;color:#1746a2;font-weight:bold;
+
+}
+
+.tabs button.active{background:#2563eb;color:white}
+
+label{display:block;margin:15px 0 7px;font-weight:bold}
+
+input,select{
+
+  width:100%;padding:13px;border:1px solid #d5ddeb;
+
+  border-radius:8px;font-size:15px;
+
+}
+
+.submit{
+
+  width:100%;padding:14px;margin-top:22px;
+
+  background:#2563eb;color:white;border:0;
+
+  border-radius:9px;font-size:16px;font-weight:bold;
+
+  cursor:pointer;
+
+}
+
+.message{text-align:center;margin-top:15px;font-size:14px}
+
+.back{text-align:center;margin-top:20px}
+
+a{color:#2563eb;text-decoration:none}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="logo">💙 Sahabatku.id</div>
+
+  <h2 id="heading">Selamat Datang!</h2>
+
+  <p>Bangun pertemanan sehat bersama Sahabatku.id.</p>
+
+  <div class="tabs">
+
+    <button id="loginTab" class="active" onclick="showForm('login')">Login</button>
+
+    <button id="registerTab" onclick="showForm('register')">Daftar</button>
+
+  </div>
+
+  <form id="authForm">
+
+    <div id="nameField" hidden>
+
+      <label>Nama Lengkap</label>
+
+      <input id="name" type="text" placeholder="Masukkan nama lengkap">
+
+    </div>
+
+    <label>Email</label>
+
+    <input id="email" type="email" placeholder="Masukkan email" required>
+
+    <label>Password</label>
+
+    <input id="password" type="password" placeholder="Minimal 6 karakter" minlength="6" required>
+
+    <div id="roleField" hidden>
+
+      <label>Daftar sebagai</label>
+
+      <select id="role">
+
+        <option value="siswa">Siswa</option>
+
+        <option value="guru_bk">Guru BK</option>
+
+      </select>
+
+    </div>
+
+    <button class="submit" id="submitButton" type="submit">Masuk</button>
+
+  </form>
+
+  <div class="message" id="message"></div>
+
+  <div class="back"><a href="index.html">← Kembali ke Beranda</a></div>
+
+</div>
+
+<script type="module">
+
+import { supabase } from './supabase.js';
+
+let mode = 'login';
+
+window.showForm = function(type){
+
+  mode = type;
+
+  document.getElementById('nameField').hidden = type !== 'register';
+
+  document.getElementById('roleField').hidden = type !== 'register';
+
+  document.getElementById('heading').textContent =
+
+    type === 'login' ? 'Selamat Datang!' : 'Buat Akun Baru';
+
+  document.getElementById('submitButton').textContent =
+
+    type === 'login' ? 'Masuk' : 'Daftar Sekarang';
+
+  document.getElementById('loginTab').classList.toggle('active',type==='login');
+
+  document.getElementById('registerTab').classList.toggle('active',type==='register');
+
+  document.getElementById('message').textContent = '';
+
+};
+
+document.getElementById('authForm').addEventListener('submit',async(e)=>{
+
+  e.preventDefault();
+
+  const email=document.getElementById('email').value.trim();
+
+  const password=document.getElementById('password').value;
+
+  const message=document.getElementById('message');
+
+  const submit=document.getElementById('submitButton');
+
+  submit.disabled=true;
+
+  message.textContent='Mohon tunggu...';
+
+  try{
+
+    if(mode==='register'){
+
+      const name=document.getElementById('name').value.trim();
+
+      const role=document.getElementById('role').value;
+
+      if(!name){
+
+        throw new Error('Nama lengkap harus diisi.');
+
+      }
+
+      const {data,error}=await supabase.auth.signUp({
+
+        email,
+
+        password,
+
+        options:{
+
+          data:{full_name:name,role:role}
+
+        }
+
+      });
+
+      if(error) throw error;
+
+      message.textContent=data.session
+
+        ? 'Pendaftaran berhasil! Silakan login.'
+
+        : 'Pendaftaran berhasil. Periksa email untuk verifikasi akun.';
+
+    }else{
+
+      const {data,error}=await supabase.auth.signInWithPassword({
+
+        email,password
+
+      });
+
+      if(error) throw error;
+
+      message.textContent='Login berhasil! Mengalihkan...';
+
+      window.location.href='dashboard.html';
+
+    }
+
+  }catch(error){
+
+    message.textContent='Gagal: '+error.message;
+
+  }finally{
+
+    submit.disabled=false;
+
+  }
+
+});
+
+</script>
+
+</body>
+
+</html>
