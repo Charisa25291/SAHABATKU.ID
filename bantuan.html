@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html lang="id">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Layanan BK - Sahabatku.id</title>
+
+<style>
+
+*{box-sizing:border-box}
+
+body{
+
+ font-family:Arial,sans-serif;
+
+ background:#edf4ff;
+
+ color:#24334d;
+
+ margin:0;
+
+ padding:20px;
+
+}
+
+header{
+
+ background:#2563eb;
+
+ color:white;
+
+ text-align:center;
+
+ padding:25px;
+
+ border-radius:15px;
+
+}
+
+.container{max-width:800px;margin:25px auto}
+
+.card{
+
+ background:white;
+
+ padding:22px;
+
+ border-radius:14px;
+
+ margin-bottom:18px;
+
+ box-shadow:0 3px 12px #0001;
+
+}
+
+h2{color:#2563eb}
+
+p,li{line-height:1.7}
+
+button{
+
+ background:#2563eb;
+
+ color:white;
+
+ border:0;
+
+ padding:13px 22px;
+
+ border-radius:8px;
+
+ cursor:pointer;
+
+}
+
+input,textarea,select{
+
+ width:100%;
+
+ padding:12px;
+
+ margin-top:8px;
+
+ border:1px solid #ccd6e5;
+
+ border-radius:8px;
+
+ font-family:Arial;
+
+}
+
+textarea{min-height:120px}
+
+a{color:white;text-decoration:none}
+
+.notice{
+
+ background:#eff6ff;
+
+ padding:15px;
+
+ border-radius:10px;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+<h1>💙 Layanan BK Sahabatku.id</h1>
+
+<p>Kamu Tidak Sendiri, Kami Siap Membantu</p>
+
+</header>
+
+<div class="container">
+
+<div class="card">
+
+<h2>🌷 Apa Itu Bimbingan dan Konseling?</h2>
+
+<p>Bimbingan dan Konseling (BK) merupakan layanan
+
+yang membantu siswa memahami dirinya, mengembangkan
+
+potensi, mengatasi kesulitan, serta mengambil
+
+keputusan yang baik dalam kehidupan.</p>
+
+</div>
+
+<div class="card">
+
+<h2>🤝 Jenis Layanan BK</h2>
+
+<ul>
+
+<li><b>Layanan Pribadi:</b> membantu siswa mengenali diri dan mengelola emosi.</li>
+
+<li><b>Layanan Sosial:</b> membantu membangun hubungan pertemanan yang sehat.</li>
+
+<li><b>Layanan Belajar:</b> membantu mengatasi kesulitan belajar.</li>
+
+<li><b>Layanan Karier:</b> membantu mengenali minat dan cita-cita.</li>
+
+</ul>
+
+</div>
+
+<div class="card">
+
+<h2>💬 Kapan Harus Menghubungi Guru BK?</h2>
+
+<ul>
+
+<li>Ketika mengalami perundungan.</li>
+
+<li>Ketika merasa kesepian atau dikucilkan.</li>
+
+<li>Ketika kesulitan berteman.</li>
+
+<li>Ketika mengalami konflik dengan teman.</li>
+
+<li>Ketika membutuhkan tempat bercerita.</li>
+
+</ul>
+
+</div>
+
+<div class="card">
+
+<h2>🛡️ Apa yang Harus Dilakukan Jika Mengalami Perundungan?</h2>
+
+<ol>
+
+<li>Jangan menyalahkan diri sendiri.</li>
+
+<li>Utamakan keselamatan dan menjauh dari situasi berbahaya.</li>
+
+<li>Ceritakan kepada orang dewasa yang dipercaya.</li>
+
+<li>Hubungi Guru BK atau pihak sekolah.</li>
+
+<li>Simpan bukti jika perundungan terjadi secara daring.</li>
+
+</ol>
+
+</div>
+
+<div class="card">
+
+<h2>📩 Formulir Permintaan Bantuan</h2>
+
+<p>Formulir ini hanya contoh tampilan. Untuk meminta
+
+bantuan sungguhan, sampaikan kepada Guru BK atau
+
+orang dewasa yang kamu percaya.</p>
+
+<form id="helpForm">
+
+<label>Nama atau inisial</label>
+
+<input id="nama" type="text" required placeholder="Masukkan nama atau inisial">
+
+<label>Masalah yang ingin dibicarakan</label>
+
+<select id="masalah" required>
+
+<option value="">Pilih masalah</option>
+
+<option>Kesulitan berteman</option>
+
+<option>Mengalami perundungan</option>
+
+<option>Konflik dengan teman</option>
+
+<option>Merasa kesepian</option>
+
+<option>Masalah lainnya</option>
+
+</select>
+
+<label>Ceritakan secara singkat</label>
+
+<textarea id="cerita" required placeholder="Tuliskan hal yang ingin kamu sampaikan..."></textarea>
+
+<button type="submit">Kirim Permintaan</button>
+
+</form>
+
+<p id="hasil"></p>
+
+</div>
+
+<div class="card notice">
+
+<h3>💙 Pesan untuk Sahabat</h3>
+
+<p>Meminta bantuan bukan tanda kelemahan.
+
+Kamu berhak merasa aman, dihargai, dan diterima
+
+di lingkungan sekolah.</p>
+
+</div>
+
+<div class="card">
+
+<a href="dashboard.html">
+
+<button type="button">← Kembali ke Dashboard</button>
+
+</a>
+
+</div>
+
+</div>
+
+<script>
+
+document.getElementById('helpForm').addEventListener('submit',function(e){
+
+ e.preventDefault();
+
+ document.getElementById('hasil').textContent=
+
+ 'Terima kasih sudah berani bercerita. Formulir contoh ini belum mengirim data kepada Guru BK. Silakan sampaikan permintaan bantuan secara langsung kepada Guru BK.';
+
+});
+
+</script>
+
+</body>
+
+</html>
