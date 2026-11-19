@@ -7,6 +7,7 @@
 
 <style>
 *{box-sizing:border-box}
+
 body{
   font-family:Arial,sans-serif;
   background:#edf4ff;
@@ -14,6 +15,7 @@ body{
   padding:25px 15px;
   color:#24334d;
 }
+
 .container{
   max-width:430px;
   margin:25px auto;
@@ -22,15 +24,23 @@ body{
   border-radius:18px;
   box-shadow:0 5px 25px #0001;
 }
+
 .logo{
   text-align:center;
   color:#2563eb;
   font-size:25px;
   font-weight:bold;
 }
+
 h2{text-align:center;color:#1746a2}
 p{text-align:center;color:#64748b;line-height:1.6}
-label{display:block;margin:15px 0 7px;font-weight:bold}
+
+label{
+  display:block;
+  margin:15px 0 7px;
+  font-weight:bold;
+}
+
 input,select{
   width:100%;
   padding:13px;
@@ -38,6 +48,7 @@ input,select{
   border-radius:8px;
   font-size:15px;
 }
+
 button{
   width:100%;
   padding:14px;
@@ -50,8 +61,15 @@ button{
   font-weight:bold;
   cursor:pointer;
 }
+
 button:disabled{opacity:.6}
-.tabs{display:flex;gap:10px;margin:22px 0}
+
+.tabs{
+  display:flex;
+  gap:10px;
+  margin:22px 0;
+}
+
 .tabs button{
   flex:1;
   margin:0;
@@ -59,20 +77,36 @@ button:disabled{opacity:.6}
   background:#e5edff;
   color:#1746a2;
 }
-.tabs button.active{background:#2563eb;color:white}
+
+.tabs button.active{
+  background:#2563eb;
+  color:white;
+}
+
 .message{
   text-align:center;
   margin-top:15px;
   font-size:14px;
-  line-height:1.5;
+  line-height:1.6;
+  overflow-wrap:anywhere;
 }
-.back{text-align:center;margin-top:20px}
-a{color:#2563eb;text-decoration:none}
+
+.back{
+  text-align:center;
+  margin-top:20px;
+}
+
+a{
+  color:#2563eb;
+  text-decoration:none;
+}
+
 [hidden]{display:none!important}
 </style>
 </head>
 
 <body>
+
 <div class="container">
 
 <div class="logo">💙 Sahabatku.id</div>
@@ -112,6 +146,7 @@ a{color:#2563eb;text-decoration:none}
 <input id="password" type="password" placeholder="Minimal 6 karakter" minlength="6" required>
 
 <button id="submitButton" type="submit">Masuk</button>
+
 </form>
 
 <div class="message" id="message"></div>
@@ -123,7 +158,11 @@ a{color:#2563eb;text-decoration:none}
 </div>
 
 <script type="module">
+
 import { supabase } from './supabase.js';
+
+// ALAMAT WEBSITE SAHABATKU.ID
+const SITE_URL = 'https://charisa25291.github.io/SAHABATKU.ID/';
 
 const params = new URLSearchParams(location.search);
 const selectedRole = params.get('role') || 'siswa';
@@ -135,29 +174,40 @@ const description = document.getElementById('description');
 const message = document.getElementById('message');
 const roleSelect = document.getElementById('role');
 const submit = document.getElementById('submitButton');
+const form = document.getElementById('authForm');
 
 if (!['siswa','admin','guru_bk'].includes(selectedRole)) {
   location.href = 'index.html';
 }
 
+// PENGATURAN JENIS AKUN
 if (selectedRole === 'admin') {
+
   heading.textContent = 'Login Admin';
   description.textContent = 'Masuk menggunakan akun Admin.';
+
 } else if (selectedRole === 'guru_bk') {
+
   heading.textContent = 'Login Guru BK';
   description.textContent = 'Masuk menggunakan akun Guru BK.';
   roleSelect.value = 'guru_bk';
+
 } else {
+
   heading.textContent = 'Login Siswa';
   description.textContent = 'Masuk menggunakan akun Siswa.';
   roleSelect.value = 'siswa';
+
 }
 
-function kunciPendaftaran(email){
+// PENYIMPANAN CADANGAN DATA PENDAFTARAN
+function kunciPendaftaran(email) {
   return 'sahabatku_pendaftaran_' + email.toLowerCase();
 }
 
+// MENGATUR TAMPILAN LOGIN DAN DAFTAR
 function showForm(type) {
+
   mode = type;
 
   document.getElementById('nameField').hidden = type !== 'register';
@@ -176,16 +226,32 @@ function showForm(type) {
 
   document.getElementById('name').required = type === 'register';
   document.getElementById('accessCode').required = type === 'register';
+
+  document.getElementById('loginTab').classList.toggle('active',type === 'login');
+  document.getElementById('registerTab').classList.toggle('active',type === 'register');
+
 }
 
 document.getElementById('loginTab').onclick = () => showForm('login');
-document.getElementById('registerTab').onclick = () => showForm('register');
+
+document.getElementById('registerTab').onclick = () => {
+
+  if(selectedRole === 'admin') {
+    message.textContent = 'Pendaftaran Admin tidak tersedia.';
+    return;
+  }
+
+  showForm('register');
+
+};
 
 roleSelect.onchange = () => {
   roleSelect.value = selectedRole === 'guru_bk' ? 'guru_bk' : 'siswa';
 };
 
+// FUNGSI MENGIRIM PENDAFTARAN KE SUPABASE
 async function kirimPendaftaran(nama,role,kode) {
+
   const {data,error} = await supabase.rpc('kirim_pendaftaran',{
     p_nama:nama,
     p_jenis_akun:role,
@@ -195,18 +261,126 @@ async function kirimPendaftaran(nama,role,kode) {
   if(error) throw error;
 
   return data;
+
 }
 
-document.getElementById('authForm').addEventListener('submit',async(e)=>{
+// MENGAMBIL DATA PENDAFTARAN DARI METADATA AKUN
+function ambilDataPendaftaran(user,email) {
+
+  const metadata = user.user_metadata || {};
+
+  if(
+    metadata.full_name &&
+    metadata.requested_role &&
+    metadata.access_code
+  ) {
+
+    return {
+      nama:metadata.full_name,
+      role:metadata.requested_role,
+      kode:metadata.access_code
+    };
+
+  }
+
+  // Cadangan untuk akun yang pernah dibuat dengan kode lama
+  const dataLama = localStorage.getItem(kunciPendaftaran(email));
+
+  if(dataLama) {
+
+    try {
+      return JSON.parse(dataLama);
+    } catch(e) {
+      return null;
+    }
+
+  }
+
+  return null;
+
+}
+
+// MEMERIKSA APAKAH PENDAFTARAN SUDAH ADA
+async function periksaPendaftaran(userId,role) {
+
+  const {data,error} = await supabase
+    .from('pendaftaran')
+    .select('status,jenis_akun')
+    .eq('user_id',userId)
+    .eq('jenis_akun',role)
+    .order('created_at',{ascending:false})
+    .limit(1);
+
+  if(error) throw error;
+
+  return data && data.length ? data[0] : null;
+
+}
+
+// MEMPROSES PENDAFTARAN YANG BELUM TERCATAT
+async function prosesPendaftaran(user,email) {
+
+  const dataPendaftaran = ambilDataPendaftaran(user,email);
+
+  if(!dataPendaftaran) {
+    return false;
+  }
+
+  if(dataPendaftaran.role !== selectedRole) {
+    throw new Error(
+      'Silakan masuk melalui pilihan akun yang sesuai dengan pendaftaran.'
+    );
+  }
+
+  // Cek dahulu agar tidak membuat pendaftaran ganda
+  const sudahAda = await periksaPendaftaran(
+    user.id,
+    dataPendaftaran.role
+  );
+
+  if(sudahAda) {
+
+    localStorage.removeItem(kunciPendaftaran(email));
+
+    return false;
+
+  }
+
+  // Kirim data pendaftaran ke tabel pendaftaran
+  const hasil = await kirimPendaftaran(
+    dataPendaftaran.nama,
+    dataPendaftaran.role,
+    dataPendaftaran.kode
+  );
+
+  localStorage.removeItem(kunciPendaftaran(email));
+
+  message.textContent =
+    (hasil || 'Pendaftaran berhasil dikirim.') +
+    ' Silakan tunggu persetujuan Admin.';
+
+  return true;
+
+}
+
+// PROSES UTAMA LOGIN DAN PENDAFTARAN
+form.addEventListener('submit',async(e)=>{
+
   e.preventDefault();
 
   submit.disabled = true;
   message.textContent = 'Sedang memproses...';
 
   try {
-    const email = document.getElementById('email').value.trim().toLowerCase();
+
+    const email = document.getElementById('email')
+      .value.trim().toLowerCase();
+
     const password = document.getElementById('password').value;
 
+    // ==========================
+    // PENDAFTARAN AKUN BARU
+    // ==========================
     if(mode === 'register') {
 
       const nama = document.getElementById('name').value.trim();
@@ -225,74 +399,93 @@ document.getElementById('authForm').addEventListener('submit',async(e)=>{
         throw new Error('Nama dan kode akses wajib diisi.');
       }
 
+      // Alamat kembali setelah konfirmasi email
+      const redirectUrl = new URL('auth.html',SITE_URL);
+      redirectUrl.searchParams.set('role',role);
+
       const {data,error} = await supabase.auth.signUp({
-        email,
-        password,
+
+        email:email,
+        password:password,
+
         options:{
+
+          emailRedirectTo:redirectUrl.toString(),
+
           data:{
-            full_name:nama
+            full_name:nama,
+            requested_role:role,
+            access_code:kode
           }
+
         }
+
       });
 
       if(error) throw error;
 
-      // Simpan sementara data pendaftaran pada browser.
-      // Data ini akan digunakan setelah email diverifikasi.
-      localStorage.setItem(kunciPendaftaran(email),JSON.stringify({
-        nama:nama,
-        role:role,
-        kode:kode
-      }));
+      // Simpan cadangan pada browser
+      localStorage.setItem(
+        kunciPendaftaran(email),
+        JSON.stringify({
+          nama:nama,
+          role:role,
+          kode:kode
+        })
+      );
 
+      // Jika konfirmasi email masih diperlukan
       if(!data.session) {
+
         message.textContent =
-          'Akun berhasil dibuat. Silakan buka email dan verifikasi akun. Setelah itu, kembali ke perangkat dan browser ini, lalu login menggunakan email dan password yang sama agar pendaftaran dikirim ke Admin.';
+          'Pendaftaran akun berhasil dibuat. Silakan buka email dan klik Confirm Email Address. Setelah email dikonfirmasi, kembali ke halaman Sahabatku.id dan login menggunakan email serta password yang sama. Data pendaftaran akan diteruskan ke Admin setelah login.';
+
         return;
+
       }
 
-      const hasil = await kirimPendaftaran(nama,role,kode);
+      // Jika akun langsung aktif
+      const sudahDikirim = await prosesPendaftaran(
+        data.user,
+        email
+      );
 
-      localStorage.removeItem(kunciPendaftaran(email));
+      if(sudahDikirim) {
+        await supabase.auth.signOut();
+      }
 
-      message.textContent = hasil;
+    }
 
-    } else {
+    // ==========================
+    // LOGIN AKUN
+    // ==========================
+    else {
 
       const {data,error} = await supabase.auth.signInWithPassword({
-        email,
-        password
+
+        email:email,
+        password:password
+
       });
 
       if(error) throw error;
 
       const user = data.user;
 
-      // Lanjutkan pendaftaran yang tertunda setelah verifikasi email.
-      const pending = localStorage.getItem(kunciPendaftaran(email));
+      // Pulihkan pendaftaran dari metadata atau cadangan browser
+      const sudahDikirim = await prosesPendaftaran(user,email);
 
-      if(pending) {
-        const formPendaftaran = JSON.parse(pending);
-
-        if(formPendaftaran.role !== selectedRole) {
-          throw new Error('Silakan login melalui pilihan akun yang sesuai.');
-        }
-
-        const hasil = await kirimPendaftaran(
-          formPendaftaran.nama,
-          formPendaftaran.role,
-          formPendaftaran.kode
-        );
-
-        localStorage.removeItem(kunciPendaftaran(email));
-
-        message.textContent = hasil + ' Silakan tunggu persetujuan Admin.';
+      if(sudahDikirim) {
 
         await supabase.auth.signOut();
         return;
+
       }
 
-      if(selectedRole === 'admin' || selectedRole === 'guru_bk') {
+      // ==========================
+      // LOGIN ADMIN
+      // ==========================
+      if(selectedRole === 'admin') {
 
         const {data:roles,error:roleError} = await supabase
           .from('user_roles')
@@ -301,39 +494,88 @@ document.getElementById('authForm').addEventListener('submit',async(e)=>{
 
         if(roleError) throw roleError;
 
-        const punyaAkses = roles?.some(r=>r.role === selectedRole);
+        const punyaAkses = roles?.some(
+          r => r.role === 'admin'
+        );
 
         if(!punyaAkses) {
+
           await supabase.auth.signOut();
-          throw new Error('Akun belum memiliki akses ' + selectedRole + '.');
+
+          throw new Error('Akun belum memiliki akses Admin.');
+
         }
 
-        message.textContent = 'Login berhasil!';
+        message.textContent = 'Login Admin berhasil!';
 
         setTimeout(()=>{
-          location.href = selectedRole === 'admin'
-            ? 'admin.html'
-            : 'guru-bk.html';
+          location.href = 'admin.html';
         },800);
 
-      } else {
+      }
 
-        const {data:pendaftaran,error:daftarError} = await supabase
-          .from('pendaftaran')
-          .select('status')
-          .eq('user_id',user.id)
-          .eq('jenis_akun','siswa')
-          .order('created_at',{ascending:false})
-          .limit(1);
+      // ==========================
+      // LOGIN GURU BK
+      // ==========================
+      else if(selectedRole === 'guru_bk') {
 
-        if(daftarError) throw daftarError;
+        const {data:roles,error:roleError} = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id',user.id);
 
-        if(!pendaftaran || !pendaftaran.length ||
-           pendaftaran[0].status !== 'Disetujui') {
+        if(roleError) throw roleError;
+
+        const punyaAkses = roles?.some(
+          r => r.role === 'guru_bk'
+        );
+
+        if(!punyaAkses) {
 
           await supabase.auth.signOut();
 
-          throw new Error('Pendaftaran siswa belum ditemukan atau belum disetujui Admin.');
+          throw new Error(
+            'Akun Guru BK belum disetujui Admin atau belum memiliki akses.'
+          );
+
+        }
+
+        message.textContent = 'Login Guru BK berhasil!';
+
+        setTimeout(()=>{
+          location.href = 'guru-bk.html';
+        },800);
+
+      }
+
+      // ==========================
+      // LOGIN SISWA
+      // ==========================
+      else {
+
+        const pendaftaran = await periksaPendaftaran(
+          user.id,
+          'siswa'
+        );
+
+        if(!pendaftaran) {
+
+          await supabase.auth.signOut();
+
+          throw new Error(
+            'Data pendaftaran siswa belum ditemukan. Silakan daftar kembali atau hubungi Admin.'
+          );
+
+        }
+
+        if(pendaftaran.status !== 'Disetujui') {
+
+          await supabase.auth.signOut();
+
+          throw new Error(
+            'Pendaftaran siswa masih menunggu persetujuan Admin.'
+          );
+
         }
 
         message.textContent = 'Login berhasil!';
@@ -341,17 +583,26 @@ document.getElementById('authForm').addEventListener('submit',async(e)=>{
         setTimeout(()=>{
           location.href = 'dashboard.html';
         },800);
+
       }
+
     }
 
   } catch(error) {
+
     message.textContent = 'Terjadi kesalahan: ' + error.message;
+
   } finally {
+
     submit.disabled = false;
+
   }
+
 });
 
+// TAMPILAN AWAL
 showForm('login');
+
 </script>
 
 </body>
