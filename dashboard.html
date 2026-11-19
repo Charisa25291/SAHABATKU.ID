@@ -1,37 +1,24 @@
 <!DOCTYPE html>
-
 <html lang="id">
-
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <title>Dashboard Sahabatku.id</title>
 
 <style>
+*{box-sizing:border-box}
 
 body{
-
   margin:0;
-
   font-family:Arial,sans-serif;
-
   background:#f2f6ff;
-
   color:#24334d;
-
 }
 
 header{
-
   background:#2563eb;
-
   color:white;
-
   padding:22px 7%;
-
 }
 
 header h2{margin:0}
@@ -39,39 +26,25 @@ header h2{margin:0}
 main{padding:35px 7%}
 
 .welcome{
-
   background:white;
-
   padding:25px;
-
   border-radius:15px;
-
   margin-bottom:25px;
-
 }
 
 .welcome h1{color:#1746a2}
 
 .cards{
-
   display:grid;
-
   grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
-
   gap:20px;
-
 }
 
 .card{
-
   background:white;
-
   padding:25px;
-
   border-radius:15px;
-
   box-shadow:0 4px 15px #0001;
-
 }
 
 .card .emoji{font-size:40px}
@@ -81,103 +54,119 @@ main{padding:35px 7%}
 .card p{line-height:1.6;color:#64748b}
 
 button{
-
   background:#2563eb;
-
   color:white;
-
   padding:11px 18px;
-
   border:0;
-
   border-radius:8px;
-
   cursor:pointer;
-
 }
 
-</style>
+button:disabled{opacity:.6}
 
+.notifikasi{
+  background:white;
+  padding:22px;
+  border-radius:15px;
+  margin-bottom:25px;
+  box-shadow:0 4px 15px #0001;
+  border-left:5px solid #2563eb;
+}
+
+.notifikasi h2{color:#1746a2}
+
+.jumlah{
+  font-size:30px;
+  font-weight:bold;
+  color:#2563eb;
+}
+
+.pesan{
+  padding:12px;
+  background:#eff6ff;
+  border-radius:8px;
+  margin-top:12px;
+  line-height:1.6;
+}
+
+#pesanNotifikasi{
+  color:#64748b;
+  line-height:1.6;
+}
+
+@media(max-width:500px){
+  main{padding:22px 5%}
+}
+</style>
 </head>
 
 <body>
 
 <header>
-
   <h2>💙 Sahabatku.id</h2>
-
   <p>Dashboard Pembelajaran Siswa</p>
-
 </header>
 
 <main>
 
   <div class="welcome">
-
     <h1>Halo, Sahabat! 👋</h1>
-
     <p>Selamat datang di ruang belajar pertemanan sehat.</p>
-
     <p id="userEmail">Memuat akun...</p>
+  </div>
 
+  <!-- NOTIFIKASI GURU BK -->
+  <div class="notifikasi">
+    <h2>🔔 Notifikasi Guru BK</h2>
+
+    <p>Kamu dapat mengetahui apakah Guru BK sudah memberikan tanggapan atas permintaan bantuanmu.</p>
+
+    <div class="jumlah" id="jumlahBalasan">0</div>
+    <p>Permintaan bantuan sudah dibalas Guru BK.</p>
+
+    <p id="pesanNotifikasi">Sedang memeriksa balasan...</p>
+
+    <div id="daftarNotifikasi"></div>
+
+    <button onclick="location.href='bantuan.html'">
+      💬 Lihat Balasan Guru BK
+    </button>
   </div>
 
   <div class="cards">
 
     <div class="card">
-
       <div class="emoji">📚</div>
-
       <h3>Materi Pembelajaran</h3>
-
       <p>Pelajari cara membangun pertemanan sehat dan saling menghargai.</p>
-
       <button onclick="location.href='materi.html'">Buka Materi</button>
-
     </div>
 
     <div class="card">
-
       <div class="emoji">📝</div>
-
       <h3>Kuis Interaktif</h3>
-
       <p>Uji pemahamanmu tentang pertemanan sehat.</p>
-
       <button onclick="location.href='kuis.html'">Mulai Kuis</button>
-
     </div>
 
     <div class="card">
-
       <div class="emoji">📋</div>
-
       <h3>Angket Siswa</h3>
-
       <p>Kenali pengalaman dan pemahaman tentang hubungan sosial.</p>
-
       <button onclick="location.href='angket.html'">Isi Angket</button>
-
     </div>
 
     <div class="card">
-
       <div class="emoji">💬</div>
-
       <h3>Bantuan dan BK</h3>
-
       <p>Kenali cara meminta bantuan ketika mengalami masalah pertemanan.</p>
-
       <button onclick="location.href='bantuan.html'">Lihat Bantuan</button>
-
     </div>
 
   </div>
 
   <p style="margin-top:35px">
-
     <button onclick="logout()">Keluar dari Akun</button>
-
   </p>
 
 </main>
@@ -186,7 +175,12 @@ button{
 
 import { supabase } from './supabase.js';
 
-const {data,error}=await supabase.auth.getUser();
+const userEmail = document.getElementById('userEmail');
+const jumlahBalasan = document.getElementById('jumlahBalasan');
+const pesanNotifikasi = document.getElementById('pesanNotifikasi');
+const daftarNotifikasi = document.getElementById('daftarNotifikasi');
+
+const {data,error} = await supabase.auth.getUser();
 
 if(error || !data.user){
 
@@ -194,13 +188,81 @@ if(error || !data.user){
 
 }else{
 
-  document.getElementById('userEmail').textContent =
+  const user = data.user;
 
-    'Akun: '+data.user.email;
+  userEmail.textContent = 'Akun: ' + user.email;
+
+  await muatNotifikasi(user.id);
 
 }
 
-window.logout=async function(){
+async function muatNotifikasi(userId){
+
+  pesanNotifikasi.textContent = 'Memeriksa balasan Guru BK...';
+
+  daftarNotifikasi.replaceChildren();
+
+  try{
+
+    const {data,error} = await supabase
+      .from('permintaan_bantuan')
+      .select('id,masalah,balasan,status,responded_at,created_at')
+      .eq('user_id',userId)
+      .not('balasan','is',null)
+      .neq('balasan','')
+      .order('responded_at',{ascending:false});
+
+    if(error) throw error;
+
+    const jumlah = data ? data.length : 0;
+
+    jumlahBalasan.textContent = jumlah;
+
+    if(jumlah === 0){
+
+      pesanNotifikasi.textContent =
+        'Belum ada balasan dari Guru BK. Jangan khawatir, periksa kembali nanti ya!';
+
+      return;
+
+    }
+
+    pesanNotifikasi.textContent =
+      'Alhamdulillah! Guru BK sudah memberikan tanggapan atas permintaan bantuanmu.';
+
+    data.forEach(item => {
+
+      const kotak = document.createElement('div');
+      kotak.className = 'pesan';
+
+      const judul = document.createElement('strong');
+      judul.textContent = '💙 ' + (item.masalah || 'Permintaan bantuan');
+      kotak.appendChild(judul);
+
+      const isi = document.createElement('p');
+      isi.textContent = item.balasan;
+      kotak.appendChild(isi);
+
+      const status = document.createElement('small');
+      status.textContent = 'Status: ' + (item.status || 'Menunggu');
+      kotak.appendChild(status);
+
+      daftarNotifikasi.appendChild(kotak);
+
+    });
+
+  }catch(error){
+
+    jumlahBalasan.textContent = '-';
+
+    pesanNotifikasi.textContent =
+      'Notifikasi belum dapat dimuat: ' + error.message;
+
+  }
+
+}
+
+window.logout = async function(){
 
   await supabase.auth.signOut();
 
@@ -211,5 +273,4 @@ window.logout=async function(){
 </script>
 
 </body>
-
 </html>
