@@ -14,17 +14,65 @@
 
 *{box-sizing:border-box}
 
-body{font-family:Arial,sans-serif;background:#edf4ff;margin:0;color:#24324a;padding:20px}
+body{
+
+  font-family:Arial,sans-serif;
+
+  background:#edf4ff;
+
+  margin:0;
+
+  color:#24324a;
+
+  padding:20px;
+
+}
 
 .container{max-width:950px;margin:auto}
 
-header{background:#315cba;color:white;padding:22px;border-radius:15px;margin-bottom:20px}
+header{
 
-.card{background:white;padding:20px;border-radius:14px;margin-bottom:18px;box-shadow:0 3px 12px #0001}
+  background:#315cba;
+
+  color:white;
+
+  padding:22px;
+
+  border-radius:15px;
+
+  margin-bottom:20px;
+
+}
+
+.card{
+
+  background:white;
+
+  padding:20px;
+
+  border-radius:14px;
+
+  margin-bottom:18px;
+
+  box-shadow:0 3px 12px #0001;
+
+}
 
 h2{color:#315cba}
 
-button{border:0;padding:10px 14px;border-radius:8px;cursor:pointer;margin:4px}
+button{
+
+  border:0;
+
+  padding:10px 14px;
+
+  border-radius:8px;
+
+  cursor:pointer;
+
+  margin:4px;
+
+}
 
 .approve{background:#16834b;color:white}
 
@@ -32,17 +80,33 @@ button{border:0;padding:10px 14px;border-radius:8px;cursor:pointer;margin:4px}
 
 .refresh{background:#315cba;color:white}
 
+.logout{background:white;color:#315cba}
+
 table{width:100%;border-collapse:collapse}
 
-th,td{padding:11px;border-bottom:1px solid #ddd;text-align:left;vertical-align:top}
+th,td{
 
-.status{font-weight:bold}
+  padding:11px;
+
+  border-bottom:1px solid #ddd;
+
+  text-align:left;
+
+  vertical-align:top;
+
+}
 
 .small{color:#64748b;font-size:13px}
 
-#pesan{margin:12px 0;color:#315cba}
+#pesan{margin:12px 0;color:#315cba;overflow-wrap:anywhere}
 
-@media(max-width:650px){.tablewrap{overflow-x:auto}table{min-width:650px}}
+.tablewrap{overflow-x:auto}
+
+@media(max-width:650px){
+
+  table{min-width:650px}
+
+}
 
 </style>
 
@@ -54,63 +118,75 @@ th,td{padding:11px;border-bottom:1px solid #ddd;text-align:left;vertical-align:t
 
 <header>
 
-<h1>Admin Sahabatku.id</h1>
+  <h1>Admin Sahabatku.id</h1>
 
-<p>Kelola pendaftaran siswa dan Guru BK</p>
+  <p>Kelola pendaftaran siswa dan Guru BK</p>
 
-<button onclick="keluar()">Keluar</button>
+  <button class="logout" onclick="keluar()">Keluar</button>
 
 </header>
 
 <div class="card">
 
-<h2>Informasi Admin</h2>
+  <h2>Informasi Admin</h2>
 
-<p id="email">Memeriksa akun...</p>
+  <p id="email">Memeriksa akun...</p>
 
-<p class="small">Admin dapat menyetujui atau menolak pendaftaran pengguna.</p>
+  <p class="small">
 
-<button class="refresh" onclick="muatPendaftaran()">Muat Ulang Pendaftaran</button>
+    Admin dapat menyetujui atau menolak pendaftaran pengguna.
 
-<p id="pesan"></p>
+  </p>
+
+  <button class="refresh" onclick="muatPendaftaran()">
+
+    Muat Ulang Pendaftaran
+
+  </button>
+
+  <p id="pesan">Menghubungkan ke database...</p>
 
 </div>
 
 <div class="card">
 
-<h2>Daftar Pendaftaran</h2>
+  <h2>Daftar Pendaftaran</h2>
 
-<div class="tablewrap">
+  <div class="tablewrap">
 
-<table>
+    <table>
 
-<thead>
+      <thead>
 
-<tr>
+        <tr>
 
-<th>Nama</th>
+          <th>Nama</th>
 
-<th>Jenis Akun</th>
+          <th>Jenis Akun</th>
 
-<th>Status</th>
+          <th>Status</th>
 
-<th>Tanggal</th>
+          <th>Tanggal</th>
 
-<th>Tindakan</th>
+          <th>Tindakan</th>
 
-</tr>
+        </tr>
 
-</thead>
+      </thead>
 
-<tbody id="daftar">
+      <tbody id="daftar">
 
-<tr><td colspan="5">Memuat data...</td></tr>
+        <tr>
 
-</tbody>
+          <td colspan="5">Memuat data...</td>
 
-</table>
+        </tr>
 
-</div>
+      </tbody>
+
+    </table>
+
+  </div>
 
 </div>
 
@@ -118,13 +194,15 @@ th,td{padding:11px;border-bottom:1px solid #ddd;text-align:left;vertical-align:t
 
 <script type="module">
 
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+import { createClient }
+
+from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
 const supabase = createClient(
 
-'https://sjfctxortdrsydvjmsjm.supabase.co',
+  'https://sjfctxortdrsydvjmsjm.supabase.co',
 
-'sb_publishable_cvwHZ0XVotmmofbi-s-ogQ_ZiJslWHA'
+  'sb_publishable_cvwHZ0XVotmmofbi-s-ogQ_ZiJslWHA'
 
 );
 
@@ -132,21 +210,27 @@ const pesan = document.getElementById('pesan');
 
 const daftar = document.getElementById('daftar');
 
+let adminSiap = false;
+
 async function periksaAdmin(){
+
+  pesan.textContent = 'Memeriksa akun Admin...';
 
   const {data:{user},error} = await supabase.auth.getUser();
 
   if(error || !user){
 
-    alert('Silakan login terlebih dahulu.');
+    pesan.textContent = 'Silakan login kembali sebagai Admin.';
 
-    location.href='auth.html';
+    setTimeout(()=>location.href='auth.html?role=admin',1500);
 
     return;
 
   }
 
-  document.getElementById('email').textContent='Login sebagai: '+user.email;
+  document.getElementById('email').textContent =
+
+    'Login sebagai: ' + user.email;
 
   const {data:roles,error:roleError} = await supabase
 
@@ -156,99 +240,137 @@ async function periksaAdmin(){
 
     .eq('user_id',user.id);
 
-  if(roleError || !roles?.some(r=>r.role==='admin')){
+  if(roleError){
 
-    alert('Akun ini tidak memiliki akses Admin.');
-
-    location.href='index.html';
+    pesan.textContent = 'Gagal memeriksa hak akses: ' + roleError.message;
 
     return;
 
   }
 
-  muatPendaftaran();
+  if(!roles || !roles.some(r=>r.role === 'admin')){
+
+    pesan.textContent = 'Akun ini tidak memiliki akses Admin.';
+
+    return;
+
+  }
+
+  adminSiap = true;
+
+  await muatPendaftaran();
 
 }
 
 window.muatPendaftaran = async function(){
 
-  pesan.textContent='Memuat pendaftaran...';
+  if(!adminSiap){
+
+    pesan.textContent = 'Akses Admin belum terverifikasi.';
+
+    return;
+
+  }
+
+  pesan.textContent = 'Sedang memuat data pendaftaran...';
+
+  daftar.innerHTML =
+
+    '<tr><td colspan="5">Mengambil data...</td></tr>';
 
   const {data,error} = await supabase
 
     .from('pendaftaran')
 
-    .select('*')
+    .select('id,nama,jenis_akun,status,created_at')
 
     .order('created_at',{ascending:false});
 
   if(error){
 
-    pesan.textContent='Gagal memuat: '+error.message;
+    daftar.innerHTML =
+
+      '<tr><td colspan="5">Data gagal dimuat.</td></tr>';
+
+    pesan.textContent =
+
+      'GAGAL MEMUAT DATA: ' + error.message;
+
+    console.error(error);
 
     return;
 
   }
 
-  daftar.innerHTML='';
+  if(!data || data.length === 0){
 
-  if(!data.length){
+    daftar.innerHTML =
 
-    daftar.innerHTML='<tr><td colspan="5">Belum ada pendaftaran.</td></tr>';
+      '<tr><td colspan="5">Belum ada pendaftaran.</td></tr>';
 
-    pesan.textContent='';
+    pesan.textContent =
+
+      'Data pendaftaran masih kosong.';
 
     return;
 
   }
+
+  daftar.innerHTML = '';
 
   data.forEach(item=>{
 
-    const tr=document.createElement('tr');
+    const tr = document.createElement('tr');
 
-    function cell(value){
+    function buatKolom(nilai){
 
-      const td=document.createElement('td');
+      const td = document.createElement('td');
 
-      td.textContent=value || '-';
+      td.textContent = nilai || '-';
 
       return td;
 
     }
 
-    tr.appendChild(cell(item.nama));
+    tr.appendChild(buatKolom(item.nama));
 
-    tr.appendChild(cell(item.jenis_akun));
+    tr.appendChild(buatKolom(item.jenis_akun));
 
-    tr.appendChild(cell(item.status));
+    tr.appendChild(buatKolom(item.status));
 
-    tr.appendChild(cell(new Date(item.created_at).toLocaleString('id-ID')));
+    const tanggal = item.created_at
 
-    const tindakan=document.createElement('td');
+      ? new Date(item.created_at).toLocaleString('id-ID')
 
-    if(item.status==='Menunggu'){
+      : '-';
 
-      const setuju=document.createElement('button');
+    tr.appendChild(buatKolom(tanggal));
 
-      setuju.textContent='Setujui';
+    const tindakan = document.createElement('td');
 
-      setuju.className='approve';
+    if(item.status === 'Menunggu'){
 
-      setuju.onclick=()=>ubahStatus(item,'Disetujui');
+      const setuju = document.createElement('button');
 
-      const tolak=document.createElement('button');
+      setuju.textContent = 'Setujui';
 
-      tolak.textContent='Tolak';
+      setuju.className = 'approve';
 
-      tolak.className='reject';
+      setuju.onclick = ()=>ubahStatus(item,'Disetujui');
 
-      tolak.onclick=()=>ubahStatus(item,'Ditolak');
+      const tolak = document.createElement('button');
+
+      tolak.textContent = 'Tolak';
+
+      tolak.className = 'reject';
+
+      tolak.onclick = ()=>ubahStatus(item,'Ditolak');
 
       tindakan.append(setuju,tolak);
 
     }else{
 
-      tindakan.textContent='Sudah diproses';
+      tindakan.textContent = 'Sudah diproses';
 
     }
 
@@ -258,41 +380,53 @@ window.muatPendaftaran = async function(){
 
   });
 
-  pesan.textContent='Pendaftaran berhasil dimuat.';
+  pesan.textContent =
+
+    'Berhasil memuat ' + data.length + ' pendaftaran.';
 
 };
 
 async function ubahStatus(item,status){
 
-  if(!confirm('Yakin ingin '+status+' pendaftaran ini?')) return;
+  const yakin = confirm(
 
-  const {error}=await supabase
+    'Yakin ingin ' + status + ' pendaftaran ' + item.nama + '?'
+
+  );
+
+  if(!yakin) return;
+
+  pesan.textContent = 'Sedang memperbarui status...';
+
+  const {error} = await supabase
 
     .from('pendaftaran')
 
-    .update({status})
+    .update({status:status})
 
     .eq('id',item.id);
 
   if(error){
 
-    alert('Gagal mengubah status: '+error.message);
+    pesan.textContent =
+
+      'Gagal mengubah status: ' + error.message;
 
     return;
 
   }
 
-  alert('Pendaftaran '+status+'.');
+  alert('Pendaftaran berhasil ' + status + '.');
 
-  muatPendaftaran();
+  await muatPendaftaran();
 
 }
 
-window.keluar=async function(){
+window.keluar = async function(){
 
   await supabase.auth.signOut();
 
-  location.href='auth.html';
+  location.href = 'auth.html?role=admin';
 
 };
 
