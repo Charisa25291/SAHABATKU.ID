@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+
+<html lang="id">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Admin Sahabatku.id</title>
+
+<style>
+
+*{box-sizing:border-box}
+
+body{font-family:Arial,sans-serif;background:#edf4ff;margin:0;color:#24324a;padding:20px}
+
+.container{max-width:950px;margin:auto}
+
+header{background:#315cba;color:white;padding:22px;border-radius:15px;margin-bottom:20px}
+
+.card{background:white;padding:20px;border-radius:14px;margin-bottom:18px;box-shadow:0 3px 12px #0001}
+
+h2{color:#315cba}
+
+button{border:0;padding:10px 14px;border-radius:8px;cursor:pointer;margin:4px}
+
+.approve{background:#16834b;color:white}
+
+.reject{background:#c83d3d;color:white}
+
+.refresh{background:#315cba;color:white}
+
+table{width:100%;border-collapse:collapse}
+
+th,td{padding:11px;border-bottom:1px solid #ddd;text-align:left;vertical-align:top}
+
+.status{font-weight:bold}
+
+.small{color:#64748b;font-size:13px}
+
+#pesan{margin:12px 0;color:#315cba}
+
+@media(max-width:650px){.tablewrap{overflow-x:auto}table{min-width:650px}}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+
+<h1>Admin Sahabatku.id</h1>
+
+<p>Kelola pendaftaran siswa dan Guru BK</p>
+
+<button onclick="keluar()">Keluar</button>
+
+</header>
+
+<div class="card">
+
+<h2>Informasi Admin</h2>
+
+<p id="email">Memeriksa akun...</p>
+
+<p class="small">Admin dapat menyetujui atau menolak pendaftaran pengguna.</p>
+
+<button class="refresh" onclick="muatPendaftaran()">Muat Ulang Pendaftaran</button>
+
+<p id="pesan"></p>
+
+</div>
+
+<div class="card">
+
+<h2>Daftar Pendaftaran</h2>
+
+<div class="tablewrap">
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Nama</th>
+
+<th>Jenis Akun</th>
+
+<th>Status</th>
+
+<th>Tanggal</th>
+
+<th>Tindakan</th>
+
+</tr>
+
+</thead>
+
+<tbody id="daftar">
+
+<tr><td colspan="5">Memuat data...</td></tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+<script type="module">
+
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const supabase = createClient(
+
+'https://sjfctxortdrsydvjmsjm.supabase.co',
+
+'sb_publishable_cvwHZ0XVotmmofbi-s-ogQ_ZiJslWHA'
+
+);
+
+const pesan = document.getElementById('pesan');
+
+const daftar = document.getElementById('daftar');
+
+async function periksaAdmin(){
+
+  const {data:{user},error} = await supabase.auth.getUser();
+
+  if(error || !user){
+
+    alert('Silakan login terlebih dahulu.');
+
+    location.href='auth.html';
+
+    return;
+
+  }
+
+  document.getElementById('email').textContent='Login sebagai: '+user.email;
+
+  const {data:roles,error:roleError} = await supabase
+
+    .from('user_roles')
+
+    .select('role')
+
+    .eq('user_id',user.id);
+
+  if(roleError || !roles?.some(r=>r.role==='admin')){
+
+    alert('Akun ini tidak memiliki akses Admin.');
+
+    location.href='index.html';
+
+    return;
+
+  }
+
+  muatPendaftaran();
+
+}
+
+window.muatPendaftaran = async function(){
+
+  pesan.textContent='Memuat pendaftaran...';
+
+  const {data,error} = await supabase
+
+    .from('pendaftaran')
+
+    .select('*')
+
+    .order('created_at',{ascending:false});
+
+  if(error){
+
+    pesan.textContent='Gagal memuat: '+error.message;
+
+    return;
+
+  }
+
+  daftar.innerHTML='';
+
+  if(!data.length){
+
+    daftar.innerHTML='<tr><td colspan="5">Belum ada pendaftaran.</td></tr>';
+
+    pesan.textContent='';
+
+    return;
+
+  }
+
+  data.forEach(item=>{
+
+    const tr=document.createElement('tr');
+
+    function cell(value){
+
+      const td=document.createElement('td');
+
+      td.textContent=value || '-';
+
+      return td;
+
+    }
+
+    tr.appendChild(cell(item.nama));
+
+    tr.appendChild(cell(item.jenis_akun));
+
+    tr.appendChild(cell(item.status));
+
+    tr.appendChild(cell(new Date(item.created_at).toLocaleString('id-ID')));
+
+    const tindakan=document.createElement('td');
+
+    if(item.status==='Menunggu'){
+
+      const setuju=document.createElement('button');
+
+      setuju.textContent='Setujui';
+
+      setuju.className='approve';
+
+      setuju.onclick=()=>ubahStatus(item,'Disetujui');
+
+      const tolak=document.createElement('button');
+
+      tolak.textContent='Tolak';
+
+      tolak.className='reject';
+
+      tolak.onclick=()=>ubahStatus(item,'Ditolak');
+
+      tindakan.append(setuju,tolak);
+
+    }else{
+
+      tindakan.textContent='Sudah diproses';
+
+    }
+
+    tr.appendChild(tindakan);
+
+    daftar.appendChild(tr);
+
+  });
+
+  pesan.textContent='Pendaftaran berhasil dimuat.';
+
+};
+
+async function ubahStatus(item,status){
+
+  if(!confirm('Yakin ingin '+status+' pendaftaran ini?')) return;
+
+  const {error}=await supabase
+
+    .from('pendaftaran')
+
+    .update({status})
+
+    .eq('id',item.id);
+
+  if(error){
+
+    alert('Gagal mengubah status: '+error.message);
+
+    return;
+
+  }
+
+  alert('Pendaftaran '+status+'.');
+
+  muatPendaftaran();
+
+}
+
+window.keluar=async function(){
+
+  await supabase.auth.signOut();
+
+  location.href='auth.html';
+
+};
+
+periksaAdmin();
+
+</script>
+
+</body>
+
+</html>
