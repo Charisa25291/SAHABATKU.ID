@@ -1,115 +1,435 @@
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin Sahabatku.id</title>
 
-Deno.serve(async (req) => {
-  try {
-    if (req.method !== "POST") {
-      return Response.json(
-        { error: "Metode tidak diizinkan." },
-        { status: 405 }
-      );
-    }
+<style>
+*{box-sizing:border-box}
 
-    const authHeader = req.headers.get("Authorization");
+body{
+  font-family:Arial,sans-serif;
+  background:#edf4ff;
+  margin:0;
+  color:#24324a;
+  padding:20px;
+}
 
-    if (!authHeader) {
-      return Response.json(
-        { error: "Silakan login sebagai Admin." },
-        { status: 401 }
-      );
-    }
+.container{max-width:950px;margin:auto}
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+header{
+  background:#315cba;
+  color:white;
+  padding:22px;
+  border-radius:15px;
+  margin-bottom:20px;
+}
 
-    const adminClient = createClient(
-      supabaseUrl,
-      serviceKey
-    );
+.card{
+  background:white;
+  padding:20px;
+  border-radius:14px;
+  margin-bottom:18px;
+  box-shadow:0 3px 12px #0001;
+}
 
-    const userClient = createClient(
-      supabaseUrl,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      {
-        global: {
-          headers: {
-            Authorization: authHeader
-          }
-        }
-      }
-    );
+h2{color:#315cba}
 
-    const { data: { user }, error: userError } =
-      await userClient.auth.getUser();
+button{
+  border:0;
+  padding:10px 14px;
+  border-radius:8px;
+  cursor:pointer;
+  margin:4px;
+}
 
-    if (userError || !user) {
-      return Response.json(
-        { error: "Sesi Admin tidak valid." },
-        { status: 401 }
-      );
-    }
+.approve{background:#16834b;color:white}
+.reject{background:#c83d3d;color:white}
+.refresh{background:#315cba;color:white}
+.logout{background:white;color:#315cba}
+.kick{background:#c83d3d;color:white}
 
-    const { data: roles, error: roleError } =
-      await adminClient
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id);
+button:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
 
-    if (roleError || !roles?.some((r) => r.role === "admin")) {
-      return Response.json(
-        { error: "Hanya Admin yang boleh melakukan tindakan ini." },
-        { status: 403 }
-      );
-    }
+table{
+  width:100%;
+  border-collapse:collapse;
+}
 
-    const { user_id } = await req.json();
+th,td{
+  padding:11px;
+  border-bottom:1px solid #ddd;
+  text-align:left;
+  vertical-align:top;
+}
 
-    if (!user_id || user_id === user.id) {
-      return Response.json(
-        { error: "ID pengguna tidak valid." },
-        { status: 400 }
-      );
-    }
+.small{
+  color:#64748b;
+  font-size:13px;
+}
 
-    const { data: targetRoles, error: targetError } =
-      await adminClient
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user_id);
+#pesan{
+  margin:12px 0;
+  color:#315cba;
+  overflow-wrap:anywhere;
+}
 
-    if (
-      targetError ||
-      !targetRoles?.some((r) =>
-        ["siswa", "guru_bk"].includes(r.role)
-      )
-    ) {
-      return Response.json(
-        { error: "Akun bukan siswa atau Guru BK." },
-        { status: 400 }
-      );
-    }
+.tablewrap{overflow-x:auto}
 
-    const { error: logoutError } = await adminClient.rpc(
-      "keluarkan_pengguna",
-      { target_user_id: user_id }
-    );
+@media(max-width:650px){
+  table{min-width:700px}
+}
+</style>
+</head>
 
-    if (logoutError) {
-      return Response.json(
-        { error: logoutError.message },
-        { status: 500 }
-      );
-    }
+<body>
 
-    return Response.json({
-      success: true,
-      message: "Sesi pengguna berhasil dicabut."
-    });
+<div class="container">
 
-  } catch (error) {
-    return Response.json(
-      { error: String(error) },
-      { status: 500 }
-    );
+<header>
+  <h1>Admin Sahabatku.id</h1>
+  <p>Kelola pendaftaran siswa dan Guru BK</p>
+  <button class="logout" onclick="keluar()">Keluar</button>
+</header>
+
+<div class="card">
+  <h2>Informasi Admin</h2>
+  <p id="email">Memeriksa akun...</p>
+
+  <p class="small">
+    Admin dapat menyetujui, menolak, dan mencabut sesi login pengguna.
+  </p>
+
+  <button class="refresh" onclick="muatPendaftaran()">
+    Muat Ulang Pendaftaran
+  </button>
+
+  <p id="pesan">Menghubungkan ke database...</p>
+</div>
+
+<div class="card">
+  <h2>Daftar Pendaftaran</h2>
+
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Nama</th>
+          <th>Jenis Akun</th>
+          <th>Status</th>
+          <th>Tanggal</th>
+          <th>Tindakan</th>
+        </tr>
+      </thead>
+
+      <tbody id="daftar">
+        <tr>
+          <td colspan="5">Memuat data...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div>
+
+<script type="module">
+
+import { createClient }
+from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const supabase = createClient(
+  'https://sjfctxortdrsydvjmsjm.supabase.co',
+  'sb_publishable_cvwHZ0XVotmmofbi-s-ogQ_ZiJslWHA'
+);
+
+const pesan = document.getElementById('pesan');
+const daftar = document.getElementById('daftar');
+
+let adminSiap = false;
+
+// MEMERIKSA ADMIN
+async function periksaAdmin(){
+
+  pesan.textContent = 'Memeriksa akun Admin...';
+
+  const {data:{user},error} =
+    await supabase.auth.getUser();
+
+  if(error || !user){
+    pesan.textContent = 'Silakan login kembali sebagai Admin.';
+
+    setTimeout(()=>{
+      location.href = 'auth.html?role=admin';
+    },1500);
+
+    return;
   }
-});
+
+  document.getElementById('email').textContent =
+    'Login sebagai: ' + user.email;
+
+  const {data:roles,error:roleError} =
+    await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id',user.id);
+
+  if(roleError){
+    pesan.textContent =
+      'Gagal memeriksa hak akses: ' + roleError.message;
+    return;
+  }
+
+  if(!roles || !roles.some(r =>
+    String(r.role).trim().toLowerCase() === 'admin'
+  )){
+    pesan.textContent = 'Akun ini tidak memiliki akses Admin.';
+    return;
+  }
+
+  adminSiap = true;
+
+  await muatPendaftaran();
+}
+
+
+// MEMUAT DATA PENDAFTARAN
+window.muatPendaftaran = async function(){
+
+  if(!adminSiap){
+    pesan.textContent = 'Akses Admin belum terverifikasi.';
+    return;
+  }
+
+  pesan.textContent = 'Sedang memuat data pendaftaran...';
+
+  daftar.innerHTML =
+    '<tr><td colspan="5">Mengambil data...</td></tr>';
+
+  const {data,error} = await supabase
+    .from('pendaftaran')
+    .select('id,user_id,nama,jenis_akun,status,created_at')
+    .order('created_at',{ascending:false});
+
+  if(error){
+
+    daftar.innerHTML =
+      '<tr><td colspan="5">Data gagal dimuat.</td></tr>';
+
+    pesan.textContent =
+      'Gagal memuat data: ' + error.message;
+
+    console.error(error);
+    return;
+  }
+
+  if(!data || data.length === 0){
+
+    daftar.innerHTML =
+      '<tr><td colspan="5">Belum ada pendaftaran.</td></tr>';
+
+    pesan.textContent = 'Data pendaftaran masih kosong.';
+    return;
+  }
+
+  daftar.innerHTML = '';
+
+  data.forEach(item=>{
+
+    const tr = document.createElement('tr');
+
+    function buatKolom(nilai){
+      const td = document.createElement('td');
+      td.textContent = nilai || '-';
+      return td;
+    }
+
+    const statusAkun =
+      String(item.status || '').trim().toLowerCase();
+
+    const jenisAkun =
+      String(item.jenis_akun || '')
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g,'_');
+
+    tr.appendChild(buatKolom(item.nama));
+    tr.appendChild(buatKolom(item.jenis_akun));
+    tr.appendChild(buatKolom(item.status));
+
+    const tanggal = item.created_at
+      ? new Date(item.created_at).toLocaleString('id-ID')
+      : '-';
+
+    tr.appendChild(buatKolom(tanggal));
+
+    const tindakan = document.createElement('td');
+
+    // PENDAFTARAN MENUNGGU
+    if(statusAkun === 'menunggu'){
+
+      const setuju = document.createElement('button');
+
+      setuju.textContent = 'Setujui';
+      setuju.className = 'approve';
+
+      setuju.onclick = () =>
+        ubahStatus(item,'Disetujui');
+
+      const tolak = document.createElement('button');
+
+      tolak.textContent = 'Tolak';
+      tolak.className = 'reject';
+
+      tolak.onclick = () =>
+        ubahStatus(item,'Ditolak');
+
+      tindakan.append(setuju,tolak);
+
+    }
+
+    // AKUN SUDAH DISETUJUI
+    else if(
+      statusAkun === 'disetujui' &&
+      ['siswa','guru_bk'].includes(jenisAkun)
+    ){
+
+      const keluarkan = document.createElement('button');
+
+      keluarkan.textContent = 'Keluarkan Akun';
+      keluarkan.className = 'kick';
+
+      if(!item.user_id){
+
+        keluarkan.disabled = true;
+        keluarkan.title = 'ID pengguna tidak tersedia';
+
+      }else{
+
+        keluarkan.onclick = () =>
+          keluarkanAkun(item);
+
+      }
+
+      tindakan.appendChild(keluarkan);
+
+    }
+
+    // STATUS LAINNYA
+    else{
+
+      tindakan.textContent = 'Sudah diproses';
+
+    }
+
+    tr.appendChild(tindakan);
+    daftar.appendChild(tr);
+
+  });
+
+  pesan.textContent =
+    'Berhasil memuat ' + data.length + ' pendaftaran.';
+};
+
+
+// MENYETUJUI ATAU MENOLAK
+async function ubahStatus(item,status){
+
+  const yakin = confirm(
+    'Yakin ingin ' + status +
+    ' pendaftaran ' + item.nama + '?'
+  );
+
+  if(!yakin) return;
+
+  pesan.textContent = 'Sedang memperbarui status...';
+
+  const {error} = await supabase
+    .from('pendaftaran')
+    .update({status:status})
+    .eq('id',item.id);
+
+  if(error){
+
+    pesan.textContent =
+      'Gagal mengubah status: ' + error.message;
+
+    return;
+  }
+
+  alert('Pendaftaran berhasil ' + status + '.');
+
+  await muatPendaftaran();
+}
+
+
+// MENGELUARKAN AKUN SISWA ATAU GURU BK
+async function keluarkanAkun(item){
+
+  const yakin = confirm(
+    'Yakin ingin mengeluarkan sesi login ' +
+    item.nama + ' (' + item.jenis_akun + ')?'
+  );
+
+  if(!yakin) return;
+
+  pesan.textContent =
+    'Sedang mencabut sesi login pengguna...';
+
+  const {data,error} = await supabase.functions.invoke(
+    'rapid-task',
+    {
+      body:{
+        user_id:item.user_id
+      }
+    }
+  );
+
+  if(error){
+
+    pesan.textContent =
+      'Gagal mengeluarkan akun: ' + error.message;
+
+    console.error(error);
+    return;
+  }
+
+  if(!data || !data.success){
+
+    pesan.textContent =
+      'Gagal: ' + (data?.error || 'Terjadi kesalahan.');
+
+    return;
+  }
+
+  alert(
+    'Permintaan pencabutan sesi berhasil untuk ' +
+    item.nama + '.'
+  );
+
+  await muatPendaftaran();
+}
+
+
+// LOGOUT ADMIN
+window.keluar = async function(){
+
+  await supabase.auth.signOut();
+
+  location.href = 'auth.html?role=admin';
+
+};
+
+
+// JALANKAN PEMERIKSAAN
+periksaAdmin();
+
+</script>
+
+</body>
+</html>
