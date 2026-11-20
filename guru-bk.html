@@ -16,10 +16,7 @@ body{
   color:#24324a;
 }
 
-.container{
-  max-width:1100px;
-  margin:auto;
-}
+.container{max-width:1100px;margin:auto}
 
 header{
   background:#315caa;
@@ -37,9 +34,7 @@ header{
   box-shadow:0 3px 12px #00000010;
 }
 
-button,select,textarea{
-  font:inherit;
-}
+button,select,textarea{font:inherit}
 
 button{
   background:#315caa;
@@ -51,14 +46,8 @@ button{
   margin:5px 0;
 }
 
-button:hover{
-  background:#234680;
-}
-
-button:disabled{
-  opacity:.6;
-  cursor:not-allowed;
-}
+button:hover{background:#234680}
+button:disabled{opacity:.6;cursor:not-allowed}
 
 select,textarea{
   width:100%;
@@ -68,20 +57,16 @@ select,textarea{
   margin:7px 0;
 }
 
-textarea{
-  min-height:90px;
-  resize:vertical;
-}
+textarea{min-height:90px;resize:vertical}
 
-#pesan{
+#pesan,#pesanAngket{
   color:#315caa;
   font-weight:bold;
   line-height:1.6;
+  overflow-wrap:anywhere;
 }
 
-.table-wrap{
-  overflow-x:auto;
-}
+.table-wrap{overflow-x:auto}
 
 table{
   width:100%;
@@ -97,9 +82,7 @@ th,td{
   line-height:1.5;
 }
 
-th{
-  background:#e8f0ff;
-}
+th{background:#e8f0ff}
 
 .keterangan{
   color:#667085;
@@ -110,6 +93,17 @@ th{
   color:#eaf1ff;
   font-size:14px;
 }
+
+.jawaban-item{
+  padding:9px;
+  margin-bottom:7px;
+  background:#f1f5ff;
+  border-radius:7px;
+  min-width:220px;
+}
+
+.jawaban-item strong{color:#315caa}
+
 </style>
 </head>
 
@@ -125,7 +119,7 @@ th{
 
 <div class="card">
   <h2>Selamat Datang, Guru BK!</h2>
-  <p>Di halaman ini Guru BK dapat membaca permintaan bantuan siswa, memberikan tanggapan, dan memperbarui status penanganan.</p>
+  <p>Di halaman ini Guru BK dapat membaca permintaan bantuan siswa, memberikan tanggapan, memperbarui status penanganan, dan melihat hasil angket siswa.</p>
 
   <button id="muat">Muat Data Permintaan</button>
   <button id="keluar">Keluar</button>
@@ -149,9 +143,36 @@ th{
       </thead>
 
       <tbody id="daftar">
+        <tr><td colspan="5">Memuat data...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <h2>📋 Hasil Angket Siswa</h2>
+  <p class="keterangan">
+    Guru BK dapat melihat identitas siswa, kelas, tanggal pengisian, dan seluruh jawaban angket yang telah dikirim.
+  </p>
+
+  <button id="muatAngket">Muat Ulang Hasil Angket</button>
+
+  <p id="pesanAngket">Memuat hasil angket...</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
         <tr>
-          <td colspan="5">Memuat data...</td>
+          <th>Nama Siswa</th>
+          <th>Email</th>
+          <th>Kelas</th>
+          <th>Tanggal Pengisian</th>
+          <th>Jawaban Angket</th>
         </tr>
+      </thead>
+
+      <tbody id="daftarAngket">
+        <tr><td colspan="5">Memuat data...</td></tr>
       </tbody>
     </table>
   </div>
@@ -166,7 +187,11 @@ const pesan = document.getElementById('pesan');
 const daftar = document.getElementById('daftar');
 const identitas = document.getElementById('identitas');
 
+const pesanAngket = document.getElementById('pesanAngket');
+const daftarAngket = document.getElementById('daftarAngket');
+
 let akunGuru = null;
+let aksesSiap = false;
 
 async function periksaAkun(){
 
@@ -174,8 +199,7 @@ async function periksaAkun(){
     await supabase.auth.getUser();
 
   if(error || !user){
-    pesan.textContent =
-      'Silakan login terlebih dahulu.';
+    pesan.textContent = 'Silakan login terlebih dahulu.';
     return false;
   }
 
@@ -192,13 +216,14 @@ async function periksaAkun(){
     return false;
   }
 
-  if(!roles || roles.length === 0){
+  if(!roles || roles.length===0){
     pesan.textContent =
       'Akses ditolak. Akun ini belum memiliki peran Guru BK.';
     return false;
   }
 
   akunGuru = user;
+  aksesSiap = true;
 
   identitas.textContent =
     'Login sebagai Guru BK: ' + user.email;
@@ -215,12 +240,13 @@ function buatSel(teks){
   return td;
 }
 
+// MEMUAT PERMINTAAN BANTUAN
 async function muatData(){
 
   daftar.innerHTML =
     '<tr><td colspan="5">Sedang mengambil data...</td></tr>';
 
-  if(!(await periksaAkun())){
+  if(!aksesSiap && !(await periksaAkun())){
     daftar.innerHTML =
       '<tr><td colspan="5">Tidak dapat mengakses data.</td></tr>';
     return;
@@ -246,12 +272,12 @@ async function muatData(){
 
   daftar.innerHTML = '';
 
-  if(!data || data.length === 0){
+  if(!data || data.length===0){
     daftar.innerHTML =
       '<tr><td colspan="5">Belum ada permintaan bantuan siswa.</td></tr>';
 
     pesan.textContent =
-      'Data berhasil diperiksa, tetapi belum ada permintaan bantuan yang dapat ditampilkan.';
+      'Belum ada permintaan bantuan siswa.';
 
     return;
   }
@@ -264,7 +290,6 @@ async function muatData(){
     baris.appendChild(buatSel(item.masalah));
     baris.appendChild(buatSel(item.cerita));
 
-    // Kolom status
     const selStatus = document.createElement('td');
     const pilihStatus = document.createElement('select');
 
@@ -276,11 +301,9 @@ async function muatData(){
     });
 
     pilihStatus.value = item.status || 'Menunggu';
-
     selStatus.appendChild(pilihStatus);
     baris.appendChild(selStatus);
 
-    // Kolom balasan
     const selBalasan = document.createElement('td');
 
     const kotakBalasan = document.createElement('textarea');
@@ -334,7 +357,6 @@ async function muatData(){
     selBalasan.appendChild(info);
 
     baris.appendChild(selBalasan);
-
     daftar.appendChild(baris);
   });
 
@@ -343,11 +365,147 @@ async function muatData(){
     ' permintaan bantuan siswa.';
 }
 
-// Tombol muat data
+// MENAMPILKAN JAWABAN ANGKET
+function tampilkanJawaban(jawaban,wadah){
+
+  if(!jawaban){
+    wadah.textContent = 'Tidak ada jawaban.';
+    return;
+  }
+
+  let daftarJawaban = [];
+
+  if(Array.isArray(jawaban)){
+    daftarJawaban = jawaban;
+  }else if(typeof jawaban==='object'){
+    daftarJawaban = Object.entries(jawaban).map(
+      ([nomor,nilai])=>({nomor,jawaban:nilai})
+    );
+  }else{
+    wadah.textContent = String(jawaban);
+    return;
+  }
+
+  if(daftarJawaban.length===0){
+    wadah.textContent = 'Tidak ada jawaban.';
+    return;
+  }
+
+  daftarJawaban.forEach((item,index)=>{
+
+    const bagian = document.createElement('div');
+    bagian.className = 'jawaban-item';
+
+    const nomor = item?.nomor || index+1;
+
+    const pernyataan =
+      item?.pernyataan ||
+      item?.pertanyaan ||
+      item?.soal ||
+      '';
+
+    let nilaiJawaban =
+      item?.jawaban ??
+      item?.nilai ??
+      item?.pilihan ??
+      item?.value ??
+      '';
+
+    if(typeof nilaiJawaban==='object' && nilaiJawaban!==null){
+      nilaiJawaban = JSON.stringify(nilaiJawaban);
+    }
+
+    const judul = document.createElement('strong');
+    judul.textContent =
+      nomor + '. ' + (pernyataan || 'Jawaban siswa');
+
+    const isi = document.createElement('div');
+    isi.textContent =
+      'Jawaban: ' +
+      (nilaiJawaban==='' ? '-' : String(nilaiJawaban));
+
+    bagian.append(judul,isi);
+    wadah.appendChild(bagian);
+  });
+}
+
+// MEMUAT HASIL ANGKET
+async function muatHasilAngket(){
+
+  if(!aksesSiap){
+    pesanAngket.textContent =
+      'Akses Guru BK belum terverifikasi.';
+    return;
+  }
+
+  pesanAngket.textContent =
+    'Sedang mengambil hasil angket siswa...';
+
+  daftarAngket.innerHTML =
+    '<tr><td colspan="5">Mengambil data...</td></tr>';
+
+  const {data,error} = await supabase
+    .from('hasil_angket')
+    .select('id,nama,email,kelas,jawaban,created_at')
+    .order('created_at',{ascending:false});
+
+  if(error){
+    daftarAngket.innerHTML =
+      '<tr><td colspan="5">Hasil angket gagal dimuat.</td></tr>';
+
+    pesanAngket.textContent =
+      'Gagal memuat hasil angket: ' + error.message;
+
+    console.error('Kesalahan hasil angket:',error);
+    return;
+  }
+
+  if(!data || data.length===0){
+    daftarAngket.innerHTML =
+      '<tr><td colspan="5">Belum ada siswa yang mengisi angket.</td></tr>';
+
+    pesanAngket.textContent =
+      'Belum ada hasil angket yang tersimpan.';
+    return;
+  }
+
+  daftarAngket.innerHTML = '';
+
+  data.forEach(item=>{
+
+    const baris = document.createElement('tr');
+
+    baris.appendChild(buatSel(item.nama));
+    baris.appendChild(buatSel(item.email));
+    baris.appendChild(buatSel(item.kelas));
+
+    const tanggal = item.created_at
+      ? new Date(item.created_at).toLocaleString('id-ID')
+      : '-';
+
+    baris.appendChild(buatSel(tanggal));
+
+    const kolomJawaban = document.createElement('td');
+
+    tampilkanJawaban(item.jawaban,kolomJawaban);
+
+    baris.appendChild(kolomJawaban);
+    daftarAngket.appendChild(baris);
+  });
+
+  pesanAngket.textContent =
+    'Berhasil memuat ' + data.length +
+    ' hasil angket siswa.';
+}
+
+// TOMBOL MUAT DATA
 document.getElementById('muat')
   .addEventListener('click',muatData);
 
-// Tombol keluar
+document.getElementById('muatAngket')
+  .addEventListener('click',muatHasilAngket);
+
+// TOMBOL KELUAR
 document.getElementById('keluar')
   .addEventListener('click',async()=>{
 
@@ -357,8 +515,28 @@ document.getElementById('keluar')
       'auth.html?role=guru_bk';
   });
 
-// Jalankan saat halaman dibuka
-muatData();
+// JALANKAN SAAT HALAMAN DIBUKA
+async function mulai(){
+  const berhasil = await periksaAkun();
+
+  if(berhasil){
+    await muatData();
+    await muatHasilAngket();
+  }else{
+    daftar.innerHTML =
+      '<tr><td colspan="5">Tidak dapat mengakses data.</td></tr>';
+
+    daftarAngket.innerHTML =
+      '<tr><td colspan="5">Tidak dapat mengakses hasil angket.</td></tr>';
+
+    if(!pesan.textContent.includes('Silakan login')){
+      pesanAngket.textContent =
+        'Akses Guru BK tidak tersedia.';
+    }
+  }
+}
+
+mulai();
 
 </script>
 
