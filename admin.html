@@ -216,6 +216,7 @@ window.muatPendaftaran = async function(){
   const {data,error} = await supabase
     .from('pendaftaran')
     .select('id,user_id,nama,jenis_akun,status,created_at')
+    .neq('status','Dikeluarkan')
     .order('created_at',{ascending:false});
 
   if(error){
@@ -233,9 +234,9 @@ window.muatPendaftaran = async function(){
   if(!data || data.length === 0){
 
     daftar.innerHTML =
-      '<tr><td colspan="5">Belum ada pendaftaran.</td></tr>';
+      '<tr><td colspan="5">Belum ada pendaftaran aktif.</td></tr>';
 
-    pesan.textContent = 'Data pendaftaran masih kosong.';
+    pesan.textContent = 'Tidak ada pendaftaran aktif.';
     return;
   }
 
@@ -316,7 +317,7 @@ window.muatPendaftaran = async function(){
   });
 
   pesan.textContent =
-    'Berhasil memuat ' + data.length + ' pendaftaran.';
+    'Berhasil memuat ' + data.length + ' pendaftaran aktif.';
 };
 
 
@@ -353,7 +354,7 @@ async function ubahStatus(item,status){
 async function keluarkanAkun(item){
 
   const yakin = confirm(
-    'Yakin ingin mengeluarkan sesi login ' +
+    'Yakin ingin mengeluarkan ' +
     item.nama + ' (' + item.jenis_akun + ')?'
   );
 
@@ -363,6 +364,7 @@ async function keluarkanAkun(item){
 
   try {
 
+    // MENCABUT SESI LOGIN
     const {data,error} = await supabase.functions.invoke(
       'rapid-task',
       {
@@ -403,11 +405,27 @@ async function keluarkanAkun(item){
       return;
     }
 
+    // MENGUBAH STATUS PENDAFTARAN
+    const {error:updateError} = await supabase
+      .from('pendaftaran')
+      .update({status:'Dikeluarkan'})
+      .eq('id',item.id);
+
+    if(updateError){
+
+      pesan.textContent =
+        'Sesi login berhasil dicabut, tetapi status pendaftaran gagal diperbarui: ' +
+        updateError.message;
+
+      return;
+    }
+
     alert(
-      'Permintaan pencabutan sesi berhasil untuk ' +
-      item.nama + '.'
+      item.nama +
+      ' berhasil dikeluarkan dari Sahabatku.id.'
     );
 
+    // MEMUAT ULANG DAFTAR
     await muatPendaftaran();
 
   } catch(error){
