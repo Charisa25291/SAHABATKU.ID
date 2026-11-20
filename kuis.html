@@ -1,61 +1,37 @@
 <!DOCTYPE html>
-
 <html lang="id">
-
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <title>Kuis Sahabatku.id</title>
 
 <style>
-
 *{box-sizing:border-box}
 
 body{
-
  font-family:Arial,sans-serif;
-
  background:#edf4ff;
-
  color:#24334d;
-
  margin:0;
-
  padding:20px;
-
 }
 
 header{
-
  background:#2563eb;
-
  color:white;
-
  text-align:center;
-
  padding:25px;
-
  border-radius:15px;
-
 }
 
 .container{max-width:750px;margin:25px auto}
 
 .card{
-
  background:white;
-
  padding:22px;
-
  border-radius:14px;
-
  margin-bottom:18px;
-
  box-shadow:0 3px 12px #0001;
-
 }
 
 h2{color:#2563eb}
@@ -63,281 +39,269 @@ h2{color:#2563eb}
 .question{margin-bottom:25px}
 
 label{
-
  display:block;
-
  padding:10px;
-
  background:#f1f5ff;
-
  margin:8px 0;
-
  border-radius:8px;
-
  cursor:pointer;
-
 }
 
 input{margin-right:8px}
 
 button{
-
  background:#2563eb;
-
  color:white;
-
  border:0;
-
  padding:13px 22px;
-
  border-radius:8px;
-
  cursor:pointer;
-
  font-size:15px;
-
 }
 
 button:hover{background:#1746a2}
 
+button:disabled{
+ background:#94a3b8;
+ cursor:not-allowed;
+}
+
 #result{
-
  display:none;
-
  background:#dbeafe;
-
  padding:20px;
-
  border-radius:12px;
-
  text-align:center;
-
  margin-top:20px;
+}
 
+#message{
+ margin-top:15px;
+ font-weight:bold;
 }
 
 a{color:white;text-decoration:none}
-
 </style>
-
 </head>
 
 <body>
 
 <header>
-
 <h1>💙 Kuis Sahabatku.id</h1>
-
 <p>Uji Pemahamanmu tentang Pertemanan Sehat</p>
-
 </header>
 
 <div class="container">
 
 <div class="card">
-
 <h2>Petunjuk Kuis</h2>
-
 <p>Jawablah 10 pertanyaan berikut dengan memilih
-
 satu jawaban yang paling tepat. Setiap jawaban
-
 benar mendapatkan nilai 10.</p>
-
 <p><b>Jumlah soal: 10 | Nilai maksimal: 100</b></p>
-
 </div>
 
 <form id="quizForm">
-
 <div class="card" id="questions"></div>
-
-<button type="submit">Periksa Jawaban</button>
-
+<button type="submit" id="submitButton">Periksa Jawaban</button>
 </form>
 
 <div id="result"></div>
+<div id="message"></div>
 
 <div class="card">
-
 <a href="dashboard.html">
-
 <button type="button">← Kembali ke Dashboard</button>
-
 </a>
-
 </div>
 
 </div>
 
-<script>
+<script type="module">
+import { supabase } from './supabase.js';
 
 const questions = [
-
 {
-
 q:"Apa yang dimaksud dengan pertemanan sehat?",
-
 a:["Hubungan yang saling menghargai","Hubungan yang saling mengejek","Hubungan yang saling memaksa","Hubungan yang penuh persaingan"],
-
 correct:0
-
 },
-
 {
-
 q:"Bagaimana sikap yang baik ketika teman sedang berbicara?",
-
 a:["Memotong pembicaraan","Mendengarkan dengan baik","Menertawakan teman","Mengabaikannya"],
-
 correct:1
-
 },
-
 {
-
 q:"Manakah contoh perilaku perundungan fisik?",
-
 a:["Memberi semangat","Membantu belajar","Memukul teman","Mengajak bermain"],
-
 correct:2
-
 },
-
 {
-
 q:"Apa yang harus dilakukan ketika melihat teman dirundung?",
-
 a:["Ikut menertawakan","Merekam untuk hiburan","Membiarkan saja","Membantu dengan aman dan melapor kepada Guru BK"],
-
 correct:3
-
 },
-
 {
-
 q:"Apa arti empati?",
-
 a:["Memahami perasaan orang lain","Memaksakan pendapat","Mementingkan diri sendiri","Mengejek kekurangan teman"],
-
 correct:0
-
 },
-
 {
-
 q:"Contoh komunikasi yang baik adalah...",
-
 a:["Berbicara kasar","Menghina teman","Berbicara sopan dan menghargai","Menyebarkan rahasia"],
-
 correct:2
-
 },
-
 {
-
 q:"Perundungan siber dapat terjadi melalui...",
-
 a:["Buku pelajaran","Media sosial dan pesan daring","Lapangan sekolah saja","Perpustakaan"],
-
 correct:1
-
 },
-
 {
-
 q:"Apa yang sebaiknya dilakukan ketika berbeda pendapat?",
-
 a:["Marah kepada teman","Memutus pertemanan","Memaksakan kehendak","Menghargai pendapat dan berdiskusi"],
-
 correct:3
-
 },
-
 {
-
 q:"Salah satu ciri teman yang baik adalah...",
-
 a:["Suka merendahkan","Saling mendukung","Suka mengancam","Suka mengucilkan"],
-
 correct:1
-
 },
-
 {
-
 q:"Kepada siapa siswa dapat meminta bantuan jika mengalami perundungan di sekolah?",
-
 a:["Guru BK","Orang yang tidak dikenal","Pelaku perundungan","Tidak perlu bercerita"],
-
 correct:0
-
 }
-
 ];
 
 const container = document.getElementById('questions');
+const form = document.getElementById('quizForm');
+const result = document.getElementById('result');
+const message = document.getElementById('message');
+const submitButton = document.getElementById('submitButton');
 
 questions.forEach((item,index)=>{
-
  const div = document.createElement('div');
-
  div.className='question';
 
  let html = `<h3>${index+1}. ${item.q}</h3>`;
 
  item.a.forEach((answer,i)=>{
-
-  html += `<label><input type="radio" name="q${index}" value="${i}" required> ${String.fromCharCode(65+i)}. ${answer}</label>`;
-
+  html += `
+  <label>
+   <input type="radio" name="q${index}" value="${i}" required>
+   ${String.fromCharCode(65+i)}. ${answer}
+  </label>`;
  });
 
  div.innerHTML=html;
-
  container.appendChild(div);
-
 });
 
-document.getElementById('quizForm').addEventListener('submit',function(e){
-
+form.addEventListener('submit', async function(e){
  e.preventDefault();
 
- let score=0;
+ if(submitButton.disabled) return;
 
- questions.forEach((item,index)=>{
+ submitButton.disabled=true;
+ submitButton.textContent='Menyimpan hasil kuis...';
+ message.textContent='';
 
-  const selected=document.querySelector(`input[name="q${index}"]:checked`);
+ try{
+  // Memeriksa akun siswa yang sedang login
+  const {data:{user},error:userError} =
+   await supabase.auth.getUser();
 
-  if(selected && Number(selected.value)===item.correct){
+  if(userError) throw userError;
 
-   score+=10;
-
+  if(!user){
+   alert('Silakan login terlebih dahulu untuk mengerjakan kuis.');
+   window.location.href='auth.html';
+   return;
   }
 
- });
+  let score=0;
+  let jumlahBenar=0;
+  const jawabanSiswa=[];
 
- const result=document.getElementById('result');
+  questions.forEach((item,index)=>{
+   const selected=document.querySelector(
+    `input[name="q${index}"]:checked`
+   );
 
- result.style.display='block';
+   const selectedIndex=Number(selected.value);
+   const benar=selectedIndex===item.correct;
 
- result.innerHTML=`
+   if(benar){
+    score+=10;
+    jumlahBenar++;
+   }
 
- <h2>🎉 Hasil Kuis Kamu</h2>
+   jawabanSiswa.push({
+    nomor_soal:index+1,
+    pertanyaan:item.q,
+    pilihan_siswa:item.a[selectedIndex],
+    indeks_jawaban:selectedIndex,
+    jawaban_benar:item.a[item.correct],
+    benar:benar
+   });
+  });
 
- <h1>${score}/100</h1>
+  // Menyimpan hasil ke Supabase
+  const {error:saveError}=await supabase
+   .from('hasil_kuis')
+   .insert({
+    user_id:user.id,
+    jawaban:jawabanSiswa,
+    nilai:score,
+    jumlah_benar:jumlahBenar,
+    total_soal:questions.length
+   });
 
- <p>${score>=80?'Hebat! Pemahamanmu sangat baik.':score>=60?'Bagus! Terus tingkatkan pemahamanmu.':'Yuk, pelajari kembali materi pertemanan sehat!'}</p>
+  if(saveError) throw saveError;
 
- <button type="button" onclick="location.reload()">Ulangi Kuis</button>
+  // Menampilkan hasil setelah berhasil disimpan
+  result.style.display='block';
 
- `;
+  let pesan='';
+  if(score>=80){
+   pesan='Hebat! Pemahamanmu sangat baik.';
+  }else if(score>=60){
+   pesan='Bagus! Terus tingkatkan pemahamanmu.';
+  }else{
+   pesan='Yuk, pelajari kembali materi pertemanan sehat!';
+  }
 
- result.scrollIntoView({behavior:'smooth'});
+  result.innerHTML=`
+   <h2>🎉 Hasil Kuis Kamu</h2>
+   <h1>${score}/100</h1>
+   <p>Jawaban benar: ${jumlahBenar} dari 10 soal</p>
+   <p>${pesan}</p>
+   <p><b>Hasil kuis berhasil disimpan!</b></p>
+   <button type="button" id="retryButton">Ulangi Kuis</button>
+  `;
 
+  document.getElementById('retryButton').addEventListener('click',()=>{
+   window.location.reload();
+  });
+
+  message.style.color='green';
+  message.textContent='Data kuis berhasil tersimpan di database.';
+
+  result.scrollIntoView({behavior:'smooth'});
+
+ }catch(error){
+  console.error('Kesalahan menyimpan kuis:',error);
+
+  message.style.color='red';
+  message.textContent=
+   'Gagal menyimpan hasil kuis. Silakan coba lagi. Detail: '+
+   (error.message || 'Kesalahan tidak diketahui');
+
+  submitButton.disabled=false;
+  submitButton.textContent='Coba Simpan Lagi';
+ }
 });
-
 </script>
 
 </body>
-
 </html>
