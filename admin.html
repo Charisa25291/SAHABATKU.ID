@@ -76,6 +76,7 @@ th,td{
   margin:12px 0;
   color:#315cba;
   overflow-wrap:anywhere;
+  white-space:pre-wrap;
 }
 
 .tablewrap{overflow-x:auto}
@@ -151,6 +152,7 @@ const pesan = document.getElementById('pesan');
 const daftar = document.getElementById('daftar');
 
 let adminSiap = false;
+
 
 // MEMERIKSA ADMIN
 async function periksaAdmin(){
@@ -270,61 +272,40 @@ window.muatPendaftaran = async function(){
 
     const tindakan = document.createElement('td');
 
-    // PENDAFTARAN MENUNGGU
     if(statusAkun === 'menunggu'){
 
       const setuju = document.createElement('button');
-
       setuju.textContent = 'Setujui';
       setuju.className = 'approve';
-
-      setuju.onclick = () =>
-        ubahStatus(item,'Disetujui');
+      setuju.onclick = () => ubahStatus(item,'Disetujui');
 
       const tolak = document.createElement('button');
-
       tolak.textContent = 'Tolak';
       tolak.className = 'reject';
-
-      tolak.onclick = () =>
-        ubahStatus(item,'Ditolak');
+      tolak.onclick = () => ubahStatus(item,'Ditolak');
 
       tindakan.append(setuju,tolak);
 
-    }
-
-    // AKUN SUDAH DISETUJUI
-    else if(
+    } else if(
       statusAkun === 'disetujui' &&
       ['siswa','guru_bk'].includes(jenisAkun)
     ){
 
       const keluarkan = document.createElement('button');
-
       keluarkan.textContent = 'Keluarkan Akun';
       keluarkan.className = 'kick';
 
       if(!item.user_id){
-
         keluarkan.disabled = true;
         keluarkan.title = 'ID pengguna tidak tersedia';
-
-      }else{
-
-        keluarkan.onclick = () =>
-          keluarkanAkun(item);
-
+      } else {
+        keluarkan.onclick = () => keluarkanAkun(item);
       }
 
       tindakan.appendChild(keluarkan);
 
-    }
-
-    // STATUS LAINNYA
-    else{
-
+    } else {
       tindakan.textContent = 'Sudah diproses';
-
     }
 
     tr.appendChild(tindakan);
@@ -355,10 +336,8 @@ async function ubahStatus(item,status){
     .eq('id',item.id);
 
   if(error){
-
     pesan.textContent =
       'Gagal mengubah status: ' + error.message;
-
     return;
   }
 
@@ -368,7 +347,7 @@ async function ubahStatus(item,status){
 }
 
 
-// MENGELUARKAN AKUN SISWA ATAU GURU BK
+// MENGELUARKAN AKUN
 async function keluarkanAkun(item){
 
   const yakin = confirm(
@@ -381,38 +360,63 @@ async function keluarkanAkun(item){
   pesan.textContent =
     'Sedang mencabut sesi login pengguna...';
 
-  const {data,error} = await supabase.functions.invoke(
-    'rapid-task',
-    {
-      body:{
-        user_id:item.user_id
-      }
-    }
-  );
+  try {
 
-  if(error){
+    const {data,error} = await supabase.functions.invoke(
+      'rapid-task',
+      {
+        body:{
+          user_id:item.user_id
+        }
+      }
+    );
+
+    if(error){
+
+      let detail = '';
+
+      if(error.context instanceof Response){
+
+        try {
+          detail = await error.context.clone().text();
+        } catch(e) {
+          detail = 'Tidak dapat membaca detail respons.';
+        }
+
+      }
+
+      pesan.textContent =
+        'Gagal mengeluarkan akun.\n' +
+        'Pesan: ' + error.message +
+        (detail ? '\nDetail server: ' + detail : '');
+
+      console.error('Error Edge Function:',error);
+      return;
+    }
+
+    if(!data || !data.success){
+
+      pesan.textContent =
+        'Gagal: ' + (data?.error || 'Respons server tidak sesuai.');
+
+      console.error('Respons server:',data);
+      return;
+    }
+
+    alert(
+      'Permintaan pencabutan sesi berhasil untuk ' +
+      item.nama + '.'
+    );
+
+    await muatPendaftaran();
+
+  } catch(error){
 
     pesan.textContent =
-      'Gagal mengeluarkan akun: ' + error.message;
+      'Terjadi kesalahan: ' + String(error);
 
     console.error(error);
-    return;
   }
-
-  if(!data || !data.success){
-
-    pesan.textContent =
-      'Gagal: ' + (data?.error || 'Terjadi kesalahan.');
-
-    return;
-  }
-
-  alert(
-    'Permintaan pencabutan sesi berhasil untuk ' +
-    item.nama + '.'
-  );
-
-  await muatPendaftaran();
 }
 
 
