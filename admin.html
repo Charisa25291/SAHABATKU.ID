@@ -305,7 +305,9 @@ window.muatPendaftaran = async function(){
       tindakan.appendChild(keluarkan);
 
     } else {
+
       tindakan.textContent = 'Sudah diproses';
+
     }
 
     tr.appendChild(tindakan);
@@ -347,7 +349,7 @@ async function ubahStatus(item,status){
 }
 
 
-// MENGELUARKAN AKUN
+// MENGELUARKAN AKUN SISWA ATAU GURU BK
 async function keluarkanAkun(item){
 
   const yakin = confirm(
@@ -357,8 +359,7 @@ async function keluarkanAkun(item){
 
   if(!yakin) return;
 
-  pesan.textContent =
-    'Sedang mencabut sesi login pengguna...';
+  pesan.textContent = 'Sedang mencabut sesi login pengguna...';
 
   try {
 
@@ -376,21 +377,20 @@ async function keluarkanAkun(item){
       let detail = '';
 
       if(error.context instanceof Response){
-
         try {
           detail = await error.context.clone().text();
         } catch(e) {
-          detail = 'Tidak dapat membaca detail respons.';
+          detail = 'Gagal membaca respons server.';
         }
-
       }
 
       pesan.textContent =
-        'Gagal mengeluarkan akun.\n' +
+        'GAGAL MENGELUARKAN AKUN\n' +
         'Pesan: ' + error.message +
-        (detail ? '\nDetail server: ' + detail : '');
+        '\nDetail server: ' +
+        (detail || 'Tidak ada detail server.');
 
-      console.error('Error Edge Function:',error);
+      console.error('Detail Edge Function:',error);
       return;
     }
 
