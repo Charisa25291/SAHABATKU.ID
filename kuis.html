@@ -212,18 +212,55 @@ form.addEventListener('submit',async function(e){
 
  try{
 
-  // Memeriksa akun siswa yang sedang login
+  // 1. Memeriksa akun siswa yang sedang login
   const {data:{user},error:userError}=
    await supabase.auth.getUser();
 
   if(userError)throw userError;
 
   if(!user){
-   alert('Sesi login tidak ditemukan. Silakan login kembali.');
    window.location.href='auth.html';
    return;
   }
 
+  // 2. Mengambil nama dan email dari tabel pendaftaran
+  const {data:profile,error:profileError}=
+   await supabase
+    .from('pendaftaran')
+    .select('nama,email')
+    .eq('user_id',user.id)
+    .eq('jenis_akun','siswa')
+    .order('created_at',{ascending:false})
+    .limit(1)
+    .maybeSingle();
+
+  if(profileError)throw profileError;
+
+  const namaSiswa=
+   profile?.nama?.trim() ||
+   user.user_metadata?.nama ||
+   user.user_metadata?.full_name ||
+   '';
+
+  const emailSiswa=
+   profile?.email ||
+   user.email ||
+   '';
+
+  // Jangan menyimpan hasil jika identitas tidak ditemukan
+  if(!namaSiswa){
+   throw new Error(
+    'Nama siswa tidak ditemukan di tabel pendaftaran. Periksa data pendaftaran akun siswa.'
+   );
+  }
+
+  if(!emailSiswa){
+   throw new Error(
+    'Email siswa tidak ditemukan. Silakan login kembali.'
+   );
+  }
+
+  // 3. Memeriksa jawaban siswa
   let score=0;
   let jumlahBenar=0;
   const jawabanSiswa=[];
@@ -251,11 +288,13 @@ form.addEventListener('submit',async function(e){
    });
   });
 
-  // Menyimpan jawaban dan nilai ke database Supabase
+  // 4. Menyimpan hasil beserta nama dan email
   const {error:saveError}=await supabase
    .from('hasil_kuis')
    .insert({
     user_id:user.id,
+    nama:namaSiswa,
+    email:emailSiswa,
     jawaban:jawabanSiswa,
     nilai:score,
     jumlah_benar:jumlahBenar,
@@ -264,7 +303,7 @@ form.addEventListener('submit',async function(e){
 
   if(saveError)throw saveError;
 
-  // Menampilkan hasil setelah penyimpanan berhasil
+  // 5. Menampilkan hasil kuis
   result.style.display='block';
 
   let pesan='';
@@ -280,6 +319,8 @@ form.addEventListener('submit',async function(e){
   result.innerHTML=`
    <h2>🎉 Hasil Kuis Kamu</h2>
    <h1>${score}/100</h1>
+   <p>Nama: ${namaSiswa}</p>
+   <p>Email: ${emailSiswa}</p>
    <p>Jawaban benar: ${jumlahBenar} dari 10 soal</p>
    <p>${pesan}</p>
    <p><b>Hasil kuis berhasil disimpan!</b></p>
@@ -293,7 +334,8 @@ form.addEventListener('submit',async function(e){
 
   message.style.color='green';
   message.style.background='#dcfce7';
-  message.textContent='Data kuis berhasil tersimpan di database.';
+  message.textContent=
+   'Data kuis beserta nama dan email berhasil disimpan.';
 
   result.scrollIntoView({behavior:'smooth'});
 
